@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #fb5533;
+  --color-secondary: #d0011b;
+}
+
+/* :where(.css-dev-only-do-not-override-1odpy5d).ant-form-item {
+  margin-bottom: 24px !important;
+} */
+
+:where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:hover,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus-within {
+  border-color: #ccc !important;
+  box-shadow: 0 0 0 2px rgba(69, 69, 69, 0.1) !important;
+}
+
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light.ant-menu-inline .ant-menu-sub.ant-menu-inline, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu.ant-menu-inline .ant-menu-sub.ant-menu-inline,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-item-selected {
+  background-color: transparent !important;
+}
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-item-selected {
+  color: #ff4000 !important;
+}
+
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-submenu-selected>.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-submenu-selected>.ant-menu-submenu-title {
+  color: #000 !important;
+}
+
+.spinner-nested-arc {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  border: 3px solid #0000;
+  border-radius: 50%;
+  border-color: #ff4000 #0000;
+  animation: spinner-e04l1k 1s infinite linear;
+}
+
+.spinner-nested-arc::before,
+.spinner-nested-arc::after {
+  content: "";
+  grid-area: 1/1;
+  margin: 2.2px;
+  border: inherit;
+  border-radius: 50%;
+}
+
+.spinner-nested-arc::before {
+  border-color: #ff1f1f #0000;
+  animation: inherit;
+  animation-duration: 0.5s;
+  animation-direction: reverse;
+}
+
+.spinner-nested-arc::after {
+  margin: 8.9px;
+}
+
+@keyframes spinner-e04l1k {
+  100% {
+    transform: rotate(1turn);
+  }
+}

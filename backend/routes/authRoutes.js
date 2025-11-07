@@ -1,19 +1,13 @@
 import express from "express";
-import {
-  forgotPassword,
-  login,
-  registerUser,
-  resetPassword,
-  updateProfile,
-  verifyOtp,
-} from "../controllers/account/accountController.js";
-import authorizeRole from "../middleware/authorizeRole.js";
+import { authController } from "../controllers/user/auth.controller.js";
+
 const authRouter = express.Router();
 
-authRouter.post("/register", registerUser);
-authRouter.post("/verifi-email", verifyOtp);
-authRouter.post("/login", login);
-authRouter.post("/forgot-password", forgotPassword);
-authRouter.post("/reset-password", resetPassword);
-authRouter.patch("/update-profile", authorizeRole(["user", "seller", "admin"]), updateProfile);
+// --- Auth Routes ---
+authRouter.post("/register", authController.authRegister);
+authRouter.post("/login", authController.authLogin);
+authRouter.post("/verify-otp", authController.authVerifyOtp);
+authRouter.post("/forgot-password", authController.authForgotPassword);
+authRouter.post("/reset-password", authController.authResetPassword);
+
 export default authRouter;

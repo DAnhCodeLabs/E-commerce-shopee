@@ -1,6 +1,5 @@
-// CommonForm.jsx - cần thêm phần này
 import React from "react";
-import { Form } from "antd";
+import { Form, Row, Col } from "antd";
 import CommonInput from "./CommonInput";
 import CommonButton from "./CommonButton";
 
@@ -17,14 +16,18 @@ const CommonForm = ({
   className = "",
   buttonLayout = "horizontal",
   initialValues = {},
+  formInstance,
 }) => {
   const [form] = Form.useForm();
 
   React.useEffect(() => {
+    if (formInstance) {
+      formInstance(form);
+    }
     if (initialValues) {
       form.setFieldsValue(initialValues);
     }
-  }, [form, initialValues]);
+  }, [form, initialValues, formInstance]);
 
   const handleFinish = (values) => {
     onSubmit?.(values);
@@ -38,9 +41,8 @@ const CommonForm = ({
     }
   };
 
-  // Style cho layout horizontal
-  const horizontalLabelCol = { span: 4 };
-  const horizontalWrapperCol = { span: 20 };
+  const horizontalLabelCol = { span: 6 };
+  const horizontalWrapperCol = { span: 18 };
 
   return (
     <Form
@@ -52,37 +54,44 @@ const CommonForm = ({
       initialValues={initialValues}
       className={`w-full ${className}`}
     >
-      {fields.map((field) => (
-        <Form.Item
-          key={field.name}
-          label={field.label}
-          name={field.name}
-          rules={field.rules || []}
-          className={field.itemClassName}
-          help={field.helpText}
-          labelAlign="right"
-        >
-          {field.customComponent || (
-            <CommonInput
-              prefixIcon={field.prefixIcon}
-              suffixIcon={field.suffixIcon}
-              className={field.className}
-              placeholder={field.placeholder}
-              type={field.type}
-              size={field.size}
-              variant={field.variant}
-              allowClear={field.allowClear}
-              disabled={field.disabled}
-              {...field.inputProps}
-            />
-          )}
-        </Form.Item>
-      ))}
+      <Row gutter={16}>
+        {fields.map((field) => (
+          <Col
+            span={field.span || 24}
+            key={field.name}
+            className={field.colClassName}
+          >
+            <Form.Item
+              label={field.label}
+              name={field.name}
+              rules={field.rules || []}
+              className={field.itemClassName}
+              help={field.helpText}
+              labelAlign="right"
+            >
+              {field.customComponent || (
+                <CommonInput
+                  prefixIcon={field.prefixIcon}
+                  suffixIcon={field.suffixIcon}
+                  className={field.className}
+                  placeholder={field.placeholder}
+                  type={field.type}
+                  size={field.size}
+                  variant={field.variant}
+                  allowClear={field.allowClear}
+                  disabled={field.disabled}
+                  {...field.inputProps}
+                />
+              )}
+            </Form.Item>
+          </Col>
+        ))}
+      </Row>
 
       {(submitButtonText || cancelButtonText) && (
         <Form.Item
           wrapperCol={
-            layout === "horizontal" ? { offset: 4, span: 20 } : undefined
+            layout === "horizontal" ? { offset: 6, span: 18 } : undefined
           }
           className="w-full !mb-0"
         >

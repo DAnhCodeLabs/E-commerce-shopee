@@ -25,4 +25,24 @@ const uploadToCloudinary = async (file, folder) => {
   }
 };
 
-export { cloudinary, storage, uploadToCloudinary, multer };
+const deleteFromCloudinary = async (imageUrl) => {
+  try {
+    const publicIdMatch = imageUrl.match(/\/v\d+\/(.+)\.\w+$/);
+    if (!publicIdMatch || !publicIdMatch[1]) {
+      console.error("Không thể trích xuất public_id từ URL:", imageUrl);
+      return;
+    }
+    const publicId = publicIdMatch[1];
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error("Lỗi khi xóa ảnh từ Cloudinary:", error);
+  }
+};
+
+export {
+  cloudinary,
+  storage,
+  uploadToCloudinary,
+  deleteFromCloudinary,
+  multer,
+};

@@ -3,6 +3,7 @@ import { Divider, Row, Col, Radio, Select, message } from "antd";
 import { useAuth } from "../../../contexts/AuthContext";
 import CommonForm from "../../../components/common/CommonForm";
 import { httpPatch } from "../../../services/httpService";
+import HeaderProfile from "./HeaderProfile";
 
 const ProfileInfo = () => {
   const { user, setUser } = useAuth();
@@ -161,43 +162,41 @@ const ProfileInfo = () => {
         updateData.birthDate = birthDate.toISOString();
       }
 
-       const response = await httpPatch("/auth/update-profile", updateData);
+      const response = await httpPatch("/auth/update-profile", updateData);
 
       if (response.success && response.data) {
-        setUser(response.data);
+        // Sửa: Đảm bảo response.data no token (nếu backend trả có, loại bỏ)
+        const updatedUser = { ...response.data };
+        if (updatedUser.token) delete updatedUser.token;
+
+        setUser(updatedUser);
         const currentUserData = JSON.parse(
           localStorage.getItem("user") || "{}"
         );
-        const updatedUserData = {
+        const mergedUserData = {
           ...currentUserData,
-          ...response.data,
+          ...updatedUser,
         };
-        localStorage.setItem("user", JSON.stringify(updatedUserData));
+        localStorage.setItem("user", JSON.stringify(mergedUserData));
+
         if (values.username !== username) {
           localStorage.setItem("username", values.username);
           setUsername(values.username);
         }
+        message.success("Cập nhật hồ sơ thành công!");
       }
-
-      message.success(response.message || "Cập nhật thông tin thành công");
     } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin:", error);
-
-      const errorMessage =
-        error.response?.data?.message || "Cập nhật thông tin thất bại";
-      message.error(errorMessage);
+      console.error("Failed to update profile:", error);
+      message.error("Cập nhật thất bại!");
     }
   };
 
   return (
     <div className="w-full flex flex-col">
-      <div className="flex flex-col justify-center items-start gap-1">
-        <h1 className="text-lg font-medium text-gray-800">Hồ Sơ Của Tôi</h1>
-        <p className="text-sm text-gray-500">
-          Quản lý thông tin hồ sơ để bảo mật tài khoản
-        </p>
-      </div>
-      <Divider />
+      <HeaderProfile
+        heading={"Hồ Sơ Của Tôi"}
+        subHeading={"Quản lý thông tin hồ sơ để bảo mật tài khoản"}
+      />
       <div>
         <CommonForm
           fields={formFields}

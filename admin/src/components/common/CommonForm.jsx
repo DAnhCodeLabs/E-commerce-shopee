@@ -1,0 +1,131 @@
+// src/components/common/CommonForm.jsx
+
+import React from "react";
+import { Form, Row, Col } from "antd";
+import CommonInput from "./CommonInput";
+import CommonButton from "./CommonButton";
+
+const CommonForm = ({
+  form,
+  fields,
+  onSubmit,
+  submitButtonText = "Submit",
+  submitButtonProps = {},
+  cancelButtonText,
+  onCancel,
+  cancelButtonProps = {},
+  loading = false,
+  layout = "vertical",
+  className = "",
+  buttonLayout = "horizontal",
+  initialValues = {},
+}) => {
+  const [internalForm] = Form.useForm();
+  const formInstance = form || internalForm;
+
+  const handleFinish = (values) => {
+    onSubmit?.(values);
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      formInstance.resetFields();
+    }
+  };
+
+  const horizontalLabelCol = { span: 6 };
+  const horizontalWrapperCol = { span: 18 };
+
+  return (
+    <Form
+      form={formInstance}
+      layout={layout}
+      labelCol={layout === "horizontal" ? horizontalLabelCol : undefined}
+      wrapperCol={layout === "horizontal" ? horizontalWrapperCol : undefined}
+      onFinish={handleFinish}
+      initialValues={initialValues}
+      className={`w-full ${className}`}
+    >
+      <Row gutter={16}>
+        {fields.map((field) => (
+          <Col
+            span={field.span || 24}
+            key={field.name}
+            className={field.colClassName}
+          >
+            <Form.Item
+              label={field.label}
+              name={field.name}
+              rules={field.rules || []}
+              className={field.itemClassName}
+              help={field.helpText}
+              labelAlign="right"
+            >
+              {field.customComponent || (
+                <CommonInput
+                  prefixIcon={field.prefixIcon}
+                  suffixIcon={field.suffixIcon}
+                  className={field.className}
+                  placeholder={field.placeholder}
+                  type={field.type}
+                  size={field.size}
+                  variant={field.variant}
+                  allowClear={field.allowClear}
+                  disabled={field.disabled}
+                  {...field.inputProps}
+                />
+              )}
+            </Form.Item>
+          </Col>
+        ))}
+      </Row>
+
+      {(submitButtonText || cancelButtonText) && (
+        <Form.Item
+          wrapperCol={
+            layout === "horizontal" ? { offset: 6, span: 18 } : undefined
+          }
+          className="w-full !mb-0"
+        >
+          <div
+            className={`flex ${
+              buttonLayout === "vertical"
+                ? "flex-col gap-2"
+                : "flex-row gap-3 justify-start"
+            } w-full`}
+          >
+            {submitButtonText && (
+              <CommonButton
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                className={`${submitButtonProps.className || ""}`}
+                {...submitButtonProps}
+              >
+                {submitButtonText}
+              </CommonButton>
+            )}
+
+            {cancelButtonText && (
+              <CommonButton
+                htmlType="button"
+                onClick={handleCancel}
+                disabled={loading}
+                className={`border-gray-300 text-gray-700 hover:border-gray-400 ${
+                  cancelButtonProps.className || ""
+                }`}
+                {...cancelButtonProps}
+              >
+                {cancelButtonText}
+              </CommonButton>
+            )}
+          </div>
+        </Form.Item>
+      )}
+    </Form>
+  );
+};
+
+export default CommonForm;

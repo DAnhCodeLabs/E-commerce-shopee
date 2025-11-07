@@ -3,7 +3,7 @@ import React from "react";
 const Footer = () => {
   return (
     <div>
-      <footer className="max-w-[1400px] mx-auto px-6 sm:px-10 md:px-16 lg:px-20 pt-10 pb-6">
+      <footer className="max-w-[1400px] mx-auto px-6 sm:px-10 md:px-16 mt-50 lg:px-20 pt-10 pb-6">
         <div className="flex flex-wrap justify-between gap-y-8">
           <div className="w-full sm:w-auto flex-shrink-0">
             <h3 className="font-bold text-[13px] mb-3">DỊCH VỤ KHÁCH HÀNG</h3>

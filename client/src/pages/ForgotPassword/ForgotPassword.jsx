@@ -31,9 +31,7 @@ const ForgotPassword = () => {
       message.success(response.message);
       navigate(`/verify-email?type=forgot&email=${values.email}`);
     } catch (error) {
-      const errMsg =
-        error.response?.data?.message || "Có lỗi xảy ra từ máy chủ!";
-      message.error(errMsg);
+      console.log(error);
     } finally {
       setLoading(false);
     }

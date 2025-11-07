@@ -77,7 +77,7 @@ const Navbar = () => {
         <div className="lg:flex items-center justify-between w-full hidden">
           <div className="flex justify-center items-center">
             <Link
-              to={"/"}
+              to={"/seller"}
               className="hover:text-white/60 duration-300 transition-all ease-in-out"
             >
               <p>Kênh người bán</p>
@@ -146,7 +146,14 @@ const Navbar = () => {
 
         <div className="flex items-center justify-between w-full gap-2 px-2 sm:gap-4 sm:px-4">
           <div className="w-[100px] sm:w-[150px] hidden md:block">
-            <img src={assets.logoShopee} alt="Shopee Logo" className="w-full" />
+            <Link to={"/"}>
+              {" "}
+              <img
+                src={assets.logoShopee}
+                alt="Shopee Logo"
+                className="w-full"
+              />
+            </Link>
           </div>
 
           <div className="flex-1">

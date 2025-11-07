@@ -84,4 +84,86 @@ const uploadMultipleImages = (folder, maxCount = 10) => {
   };
 };
 
-export { uploadSingleImage, uploadMultipleImages };
+const uploadProductImages = (folder) => {
+  const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.startsWith("image/")) {
+        return cb(new Error("Chỉ được phép upload file ảnh"), false);
+      }
+      cb(null, true);
+    },
+  }).any();
+
+  return async (req, res, next) => {
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || "Lỗi khi upload ảnh",
+        });
+      }
+
+      if (req.files && req.files.length > 0) {
+        try {
+          // Tách files: ảnh chính và biến thể
+          const mainFiles = [];
+          const variantFiles = {}; // {fieldname: file}
+
+          // ==========================================================
+          // SỬA LOGIC TÁCH FILE Ở ĐÂY
+          // ==========================================================
+          req.files.forEach((file) => {
+            // Key 'images' (từ AddProduct) HOẶC 'new_main_images' (từ EditProduct)
+            if (
+              file.fieldname === "images" ||
+              file.fieldname === "new_main_images"
+            ) {
+              mainFiles.push(file);
+            }
+
+            // Key 'variant_image_' (từ AddProduct) HOẶC 'TEMP_' (từ EditProduct)
+            else if (
+              file.fieldname.startsWith("variant_image_") ||
+              file.fieldname.startsWith("TEMP_")
+            ) {
+              variantFiles[file.fieldname] = file;
+            }
+          });
+          // ==========================================================
+          // KẾT THÚC SỬA LOGIC
+          // ==========================================================
+
+          // Upload ảnh chính
+          const mainImageUrls = await Promise.all(
+            mainFiles.map((file) => uploadToCloudinary(file, folder))
+          );
+          req.mainImages = mainImageUrls; // Đây là mảng: ["url1", "url2"]
+
+          // Upload ảnh biến thể
+          const variantImageUrls = {};
+          await Promise.all(
+            Object.entries(variantFiles).map(async ([fieldName, file]) => {
+              const url = await uploadToCloudinary(file, folder);
+              // Lưu theo key (ví dụ: {"TEMP_0_0": "url_A"})
+              variantImageUrls[fieldName] = url;
+            })
+          );
+          req.variantImageUrls = variantImageUrls; // Đây là object
+
+          next();
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: error.message || "Lỗi khi upload ảnh lên Cloudinary",
+          });
+        }
+      } else {
+        next();
+      }
+    });
+  };
+};
+
+export { uploadSingleImage, uploadMultipleImages, uploadProductImages };

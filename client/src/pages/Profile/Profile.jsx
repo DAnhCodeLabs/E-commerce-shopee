@@ -1,43 +1,24 @@
 import React, { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import {
-  Layout,
-  Menu,
-  Card,
-  Form,
-  Input,
-  Button,
-  Radio,
-  Select,
-  Upload,
-  Avatar,
-  Divider,
-  Row,
-  Col,
-} from "antd";
+import {  Menu,  Divider } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { FaPencilAlt, FaRegUser } from "react-icons/fa";
+import { FaPencilAlt, FaRegUser, FaClipboardList } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext";
 
-const { Sider, Content } = Layout;
-const { Option } = Select;
 
 const Profile = () => {
   const location = useLocation();
-  const [form] = Form.useForm();
-  const [gender, setGender] = useState("");
   const { user } = useAuth();
 
-  // Hàm này xác định key đang active dựa trên URL
   const getActiveKey = () => {
     const path = location.pathname;
     if (path.includes("/profile/address")) return "address";
     if (path.includes("/profile/password")) return "password";
+    if (path.includes("/profile/privacy-settings")) return "privacy";
     if (path === "/profile" || path.includes("/profile/info")) return "profile";
-    return "profile"; // mặc định
+    return "profile";
   };
 
-  // Menu items với cấu trúc cha-con
   const menuItems = [
     {
       key: "my-profile",
@@ -49,10 +30,6 @@ const Profile = () => {
           label: <Link to="/profile">Hồ sơ</Link>,
         },
         {
-          key: "bank",
-          label: "Ngân Hàng",
-        },
-        {
           key: "address",
           label: <Link to="/profile/address">Địa chỉ</Link>,
         },
@@ -61,18 +38,23 @@ const Profile = () => {
           label: <Link to="/profile/password">Đổi Mật Khẩu</Link>,
         },
         {
-          key: "settings",
-          label: "Cài Đặt Thông Báo",
-        },
-        {
           key: "privacy",
-          label: "Những Thiết Lập Riêng Tư",
+          label: (
+            <Link to={"/profile/privacy-settings"}>
+              Những Thiết Lập Riêng Tư
+            </Link>
+          ),
         },
         {
           key: "personal",
           label: "Thông Tin Cá Nhân",
         },
       ],
+    },
+    {
+      key: "orders",
+      icon: <FaClipboardList />,
+      label: "Đơn mua",
     },
   ];
 

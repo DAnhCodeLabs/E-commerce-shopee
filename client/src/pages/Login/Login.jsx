@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { httpPost } from "../../../../../eCommerce/client/src/services/httpService";
 import { useAuth } from "../../contexts/AuthContext";
 import Loader from "../../components/common/Loader";
+
 const Login = () => {
   const [state, setState] = useState("login");
   const navigate = useNavigate();
@@ -16,50 +17,57 @@ const Login = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      let response;
-      switch (state) {
-        case "register":
-          response = await httpPost("/auth/register", {
-            username: values.username,
-            email: values.email,
-            password: values.password,
-          });
-          if (response.success) {
-            message.success(response.message);
-            navigate(`/verify-email?type=register&email=${values.email}`);
-          } else {
-            message.error(response.message);
-          }
-          break;
-        case "login":
-          response = await httpPost("/auth/login", {
-            identifier: values.identifier,
-            password: values.password,
-            type: "user",
-          });
-          if (response.success) {
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data));
-            setUser(response.data);
-            setToken(response.data.token);
-            message.success(response.message);
-            setTimeout(() => navigate("/"), 1500);
-          } else {
-            message.error(response.message);
-          }
-          break;
-        default:
-          message.error("Hành động không hợp lệ.");
-          return;
+      if (state === "register") {
+        // Không cần gán kết quả cho biến vì thông báo thành công đã được tự động xử lý
+        const response = await httpPost("/auth/register", {
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        });
+        if (response.success) {
+          message.success(response.message);
+          navigate(`/verify-email?type=register&email=${values.email}`);
+        } else {
+          message.error(response.message);
+        }
+      } else if (state === "login") {
+        const loginResponse = await httpPost("/auth/login", {
+          identifier: values.identifier,
+          password: values.password,
+          type: "user",
+        });
+
+        if (loginResponse.success) {
+          message.success(loginResponse.message);
+
+          // Sửa: Extract user data, loại bỏ token trước khi lưu/set
+          const fullData = loginResponse.data;
+          const userData = { ...fullData };
+          const token = userData.token;
+          delete userData.token; // Loại bỏ token khỏi user object
+
+          localStorage.setItem("user", JSON.stringify(userData));
+          localStorage.setItem("token", token);
+          setUser(userData);
+          setToken(token);
+
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
+        } else {
+          message.error(loginResponse.message);
+        }
       }
     } catch (error) {
+      console.error("Lỗi khi thực hiện thao tác:", error.message);
       const errMsg =
-        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!";
+        error.response?.data?.message || "Có lỗi xảy ra từ máy chủ!";
       message.error(errMsg);
     } finally {
       setLoading(false);
     }
   };
+
   const passwordField = {
     name: "password",
     label: "Mật khẩu",
@@ -68,6 +76,7 @@ const Login = () => {
     placeholder: "Nhập mật khẩu",
     size: "large",
   };
+
   const loginFields = [
     {
       name: "identifier",
@@ -97,6 +106,7 @@ const Login = () => {
     },
     passwordField,
   ];
+
   const registerFields = [
     {
       name: "username",
@@ -117,7 +127,9 @@ const Login = () => {
     },
     passwordField,
   ];
+
   const formFields = state === "login" ? loginFields : registerFields;
+
   return (
     <>
       {loading && <Loader />}

@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+body {
+  font-family: sans-serif;
+}
+
 @theme {
   --color-primary: #fb5533;
   --color-secondary: #d0011b;
+}
+
+/* :where(.css-dev-only-do-not-override-1odpy5d).ant-select-dropdown-hidden {
+    display: block !important;
+} */
+
+:where(.css-dev-only-do-not-override-1odpy5d).ant-tabs
+  > .ant-tabs-nav
+  .ant-tabs-nav-wrap,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-tabs
+  > div
+  > .ant-tabs-nav
+  .ant-tabs-nav-wrap {
+  justify-content: center !important;
+  align-self: center !important;
 }
 
 /* :where(.css-dev-only-do-not-override-1odpy5d).ant-form-item {
@@ -10,20 +29,45 @@
 } */
 
 :where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:hover,
-:where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus-within {
+:where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-input-outlined:focus-within,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-btn-variant-outlined:not(
+    :disabled
+  ):not(.ant-btn-disabled):hover,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-btn-variant-dashed:not(
+    :disabled
+  ):not(.ant-btn-disabled):hover {
   border-color: #ccc !important;
   box-shadow: 0 0 0 2px rgba(69, 69, 69, 0.1) !important;
 }
 
-:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light.ant-menu-inline .ant-menu-sub.ant-menu-inline, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu.ant-menu-inline .ant-menu-sub.ant-menu-inline,
-:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-item-selected {
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light.ant-menu-inline
+  .ant-menu-sub.ant-menu-inline,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  > .ant-menu.ant-menu-inline
+  .ant-menu-sub.ant-menu-inline,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  > .ant-menu
+  .ant-menu-item-selected {
   background-color: transparent !important;
 }
-:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-item-selected {
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  > .ant-menu
+  .ant-menu-item-selected {
   color: #ff4000 !important;
 }
 
-:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light .ant-menu-submenu-selected>.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light>.ant-menu .ant-menu-submenu-selected>.ant-menu-submenu-title {
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  .ant-menu-submenu-selected
+  > .ant-menu-submenu-title,
+:where(.css-dev-only-do-not-override-1odpy5d).ant-menu-light
+  > .ant-menu
+  .ant-menu-submenu-selected
+  > .ant-menu-submenu-title {
   color: #000 !important;
 }
 
@@ -61,4 +105,32 @@
   100% {
     transform: rotate(1turn);
   }
+}
+
+.slick-arrow {
+  position: absolute;
+  top: 45%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px !important;
+  height: 40px !important;
+  background: #020101 !important;
+  border-radius: 100%;
+  font-family: FontAwesome !important;
+}
+
+.slick-arrow.slick-next {
+  right: -25px !important;
+}
+
+ .slick-arrow.slick-prev {
+  left: -25px !important;
+}
+
+ .slick-arrow.slick-next::before,
+ .slick-arrow.slick-prev::before {
+  font-family: FontAwesome !important;
+  color: #fff;
 }

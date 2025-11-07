@@ -41,7 +41,7 @@ const VerifyEmail = () => {
       }
     } catch (error) {
       const errMsg =
-        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!";
+        error.response?.data?.message || "Có lỗi xảy ra từ máy chủ!";
       message.error(errMsg);
     } finally {
       setLoading(false);
@@ -50,20 +50,20 @@ const VerifyEmail = () => {
 
   const onPasswordFinish = async (values) => {
     try {
-      const respone = await httpPost("/auth/reset-password", {
+      const response = await httpPost("/auth/reset-password", {
         email,
         newPassword: values.password,
       });
-      if (respone.success) {
-        message.success(respone.message);
+      if (response.success) {
+        message.success(response.message);
         next();
       } else {
-        message.error(respone.message);
+        message.error(response.message);
       }
     } catch (error) {
-      const errMsg =
-        error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!";
-      message.error(errMsg);
+       const errMsg =
+         error.response?.data?.message || "Có lỗi xảy ra từ máy chủ!";
+       message.error(errMsg);
     } finally {
       setLoading(false);
     }

@@ -33,22 +33,11 @@ const accountSchema = new mongoose.Schema({
     ],
     minlength: [6, "Mật khẩu phải có ít nhất 6 ký tự"],
   },
-  // provider: {
-  //   type: String,
-  //   enum: ["local", "facebook", "google", "apple"],
-  //   default: "local",
-  // },
-  // socialId: {
-  //   type: String,
-  //   unique: true,
-  //   sparse: true,
-  // },
   emailVerified: { type: Boolean, default: false },
   pendingEmail: { type: String },
   otp: { type: String },
   otpExpiry: { type: Date },
 
-  // Thông tin cá nhân
   role: {
     type: String,
     enum: ["user", "seller", "admin"],
@@ -74,15 +63,16 @@ const accountSchema = new mongoose.Schema({
   },
   avatar: { type: String, default: "" },
 
-  // Địa chỉ giao hàng
   address: {
     type: [
       {
-        addressName: {
+        name: {
           type: String,
           trim: true,
-          maxlength: [50, "Tên địa chỉ không được vượt quá 50 ký tự"],
-          default: "Địa chỉ",
+        },
+        phone: {
+          type: String,
+          trim: true,
         },
         street: {
           type: String,
@@ -101,41 +91,11 @@ const accountSchema = new mongoose.Schema({
           trim: true,
           default: "Việt Nam",
         },
-        isDefault: { type: Boolean, default: false },
       },
     ],
     default: [],
-    validate: [
-      {
-        validator: function (addresses) {
-          const defaultCount = addresses.filter(
-            (addr) => addr.isDefault
-          ).length;
-          return addresses.length === 0 || defaultCount === 1;
-        },
-        message:
-          "Phải có duy nhất một địa chỉ mặc định nếu danh sách địa chỉ không rỗng.",
-      },
-      {
-        validator: function (addresses) {
-          return addresses.length <= 10;
-        },
-        message: "Số lượng địa chỉ tối đa là 10.",
-      },
-    ],
   },
 
-  // Ví tiền (ShopeePay-like)
-  // wallet: {
-  //   type: {
-  //     balance: { type: Number, default: 0 },
-  //     currency: { type: String, default: "VND" },
-  //     isActive: { type: Boolean, default: false }, // Cần verify để active
-  //   },
-  //   default: { balance: 0, currency: "VND", isActive: false },
-  // },
-
-  // Thông tin cửa hàng (cho seller)
   shop: {
     type: {
       shopName: {
@@ -154,9 +114,12 @@ const accountSchema = new mongoose.Schema({
         trim: true,
         maxlength: [500, "Mô tả không vượt quá 500 ký tự"],
       },
+      taxcode: { type: String, required: true },
+      PlaceOfGrant: { type: String, required: true },
+      addressSeller: { type: String },
+      addressShop: { type: String },
       shopLogo: { type: String, default: "" },
       joinDate: { type: Date, default: Date.now },
-      location: { type: String, default: "Việt Nam" },
       productsCount: { type: Number, default: 0 },
       verificationStatus: {
         type: String,
@@ -174,7 +137,6 @@ const accountSchema = new mongoose.Schema({
     ],
   },
 
-  // Thông tin hệ thống và an ninh
   lastLogin: { type: Date },
   devices: [
     {
@@ -187,11 +149,9 @@ const accountSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// Index cho hiệu suất
 accountSchema.index({ role: 1 });
 accountSchema.index({ "shop.verificationStatus": 1 });
 
-// Middleware mã hóa mật khẩu
 accountSchema.pre("save", async function (next) {
   if (!this.isModified("password") || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
@@ -199,7 +159,6 @@ accountSchema.pre("save", async function (next) {
   next();
 });
 
-// Phương thức so sánh mật khẩu
 accountSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

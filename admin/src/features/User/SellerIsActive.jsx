@@ -84,38 +84,34 @@ const SellerIsActive = () => {
   };
 
   // Xử lý khi Admin duyệt hoặc từ chối
-  const handleVerify = async (sellerId, newStatus) => {
-    setIsVerifying(sellerId); // Bật loading cho hàng này
-    try {
-      // Gọi API verifySellerApplication
-      await httpPut(`/admin/verify-seller/${sellerId}`, {
-        status: newStatus,
-      });
+ const handleVerify = async (sellerId, newStatus) => {
+   setIsVerifying(sellerId);
+   try {
+     await httpPut(`/admin/sellers/${sellerId}/verify`, { status: newStatus });
 
-      message.success("Cập nhật trạng thái thành công!");
-
-      // Cập nhật lại state của bảng (không cần gọi lại API)
-      setSellers((prevSellers) =>
-        prevSellers.map((seller) =>
-          seller._id === sellerId
-            ? {
-                ...seller,
-                shop: {
-                  ...seller.shop,
-                  verificationStatus: newStatus,
-                  isActive: newStatus === "approved", // Tự động active nếu duyệt
-                },
-              }
-            : seller
-        )
-      );
-    } catch (error) {
-      // Lỗi đã được httpService xử lý
-      console.error("Lỗi khi cập nhật trạng thái:", error);
-    } finally {
-      setIsVerifying(null); // Tắt loading
-    }
-  };
+     message.success("Cập nhật trạng thái thành công!");
+     setSellers((prevSellers) =>
+       prevSellers.map((seller) =>
+         seller._id === sellerId
+           ? {
+               ...seller,
+               shop: seller.shop
+                 ? {
+                     ...seller.shop,
+                     verificationStatus: newStatus,
+                     isActive: newStatus === "approved",
+                   }
+                 : null,
+             }
+           : seller
+       )
+     );
+   } catch (error) {
+     console.error("Lỗi khi cập nhật trạng thái:", error);
+   } finally {
+     setIsVerifying(null);
+   }
+ };
 
   // --- Configs (Cấu hình) ---
 
@@ -166,7 +162,12 @@ const SellerIsActive = () => {
       dataIndex: ["shop", "verificationStatus"],
       key: "status",
       width: 150,
-      render: (status) => {
+      render: (status, record) => {
+        // Kiểm tra nếu không có shop
+        if (!record.shop) {
+          return <Tag color="orange">CHƯA ĐĂNG KÝ</Tag>;
+        }
+
         let color = "blue";
         let text = "Chờ duyệt";
         if (status === "approved") {
@@ -185,6 +186,11 @@ const SellerIsActive = () => {
       fixed: "right",
       width: 150,
       render: (text, record) => {
+        // Kiểm tra nếu không có shop
+        if (!record.shop) {
+          return <Tag color="orange">Không có thông tin</Tag>;
+        }
+
         const { verificationStatus } = record.shop;
 
         // Nếu đang ở trạng thái 'pending', hiển thị Select

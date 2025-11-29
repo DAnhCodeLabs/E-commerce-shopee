@@ -16,6 +16,13 @@ const userAddAddress = asyncHandler(async (req, res) => {
     throw new Error("Không tìm thấy tài khoản người dùng.");
   }
 
+  if (!account.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
+  }
+
   account.address.push({
     name,
     phone,
@@ -36,13 +43,20 @@ const userAddAddress = asyncHandler(async (req, res) => {
 const userGetAddresses = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
-  const user = await Account.findById(userId).select("address");
-  if (!user) {
+  const userFull = await Account.findById(userId).select("address isActive");
+  if (!userFull) {
     res.status(404);
     throw new Error("Không tìm thấy người dùng");
   }
 
-  if (!user.address || user.address.length === 0) {
+  if (!userFull.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
+  }
+
+  if (!userFull.address || userFull.address.length === 0) {
     return res.status(200).json({
       success: true,
       message: "Hiện tại bạn chưa có địa chỉ giao hàng nào",
@@ -53,7 +67,7 @@ const userGetAddresses = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Lấy danh sách địa chỉ thành công",
-    addresses: user.address,
+    addresses: userFull.address,
   });
 });
 
@@ -72,6 +86,13 @@ const userUpdateAddress = asyncHandler(async (req, res) => {
   if (!account) {
     res.status(404);
     throw new Error("Không tìm thấy tài khoản người dùng");
+  }
+
+  if (!account.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
   }
 
   const addressToUpdate = account.address.id(addressId);
@@ -105,6 +126,13 @@ const userDeleteAddress = asyncHandler(async (req, res) => {
   if (!account) {
     res.status(404);
     throw new Error("Không tìm thấy tài khoản người dùng");
+  }
+
+  if (!account.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
   }
 
   const addressIndex = account.address.findIndex(

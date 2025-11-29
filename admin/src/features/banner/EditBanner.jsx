@@ -12,7 +12,7 @@ const EditBanner = () => {
   const [loading, setLoading] = useState(false);
   const [bannerData, setBannerData] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const [initialImage, setInitialImage] = useState([]); 
+  const [initialImage, setInitialImage] = useState([]);
 
   useEffect(() => {
     const fetchBanner = async () => {
@@ -72,7 +72,7 @@ const EditBanner = () => {
     };
 
     try {
-      await httpPatch(`/admin/banner/${id}`, formData, config);
+      await httpPatch(`/admin/banners/${id}`, formData, config);
 
       navigate("/admin/banners");
     } catch (error) {

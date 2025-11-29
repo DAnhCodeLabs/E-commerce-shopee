@@ -1,7 +1,11 @@
-// CommonInput.jsx - cập nhật phần suffix
+// CommonInput.jsx
 import React, { useState } from "react";
-import { Input, Button } from "antd";
-import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { Input, Button, Rate, Upload } from "antd";
+import {
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 
 const CommonInput = ({
   prefixIcon,
@@ -31,7 +35,7 @@ const CommonInput = ({
 
   const combinedClassName = `w-full ${className}`;
 
-  // Xử lý suffix icon - hỗ trợ cả React element và string
+  // Render suffix for password
   const renderSuffix = () => {
     if (isPassword) {
       return (
@@ -46,30 +50,70 @@ const CommonInput = ({
     }
 
     if (suffixIcon) {
-      // Nếu là React element
       if (React.isValidElement(suffixIcon)) {
         return suffixIcon;
       }
-      // Nếu là string
       return <span className="text-blue-500 cursor-pointer">{suffixIcon}</span>;
     }
 
     return null;
   };
 
-  return (
-    <Input
-      className={combinedClassName}
-      size={size}
-      variant={variant}
-      type={inputType}
-      prefix={prefixIcon}
-      suffix={renderSuffix()}
-      value={value}
-      onChange={onChange}
-      {...rest}
-    />
-  );
+  // Handle different input types
+  switch (type) {
+    case "textarea":
+      return (
+        <Input.TextArea
+          className={combinedClassName}
+          size={size}
+          value={value}
+          onChange={onChange}
+          {...rest}
+        />
+      );
+    case "rate":
+      return (
+        <Rate
+          value={value}
+          onChange={onChange}
+          tooltips={rest.tooltips}
+          className={`${combinedClassName} text-2xl`}
+          {...rest}
+        />
+      );
+    case "upload":
+      return (
+        <Upload
+          fileList={value}
+          onChange={onChange}
+          beforeUpload={() => false}
+          listType="picture-card"
+          className="w-full"
+          {...rest}
+        >
+          {(!value || value.length < (rest.maxCount || 5)) && (
+            <div className="flex flex-col items-center justify-center">
+              <UploadOutlined className="text-2xl mb-1" />
+              <span>Tải ảnh lên</span>
+            </div>
+          )}
+        </Upload>
+      );
+    default:
+      return (
+        <Input
+          className={combinedClassName}
+          size={size}
+          variant={variant}
+          type={inputType}
+          prefix={prefixIcon}
+          suffix={renderSuffix()}
+          value={value}
+          onChange={onChange}
+          {...rest}
+        />
+      );
+  }
 };
 
 export default CommonInput;

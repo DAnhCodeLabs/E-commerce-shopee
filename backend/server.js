@@ -9,6 +9,7 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import sellerRouter from "./routes/sellerRoutes.js";
 import { adminBannerController } from "./controllers/admin/adminBanner.controller.js";
+import chatRouter from "./routes/chatRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -30,6 +31,8 @@ app.use("/api/seller", sellerRouter);
 
 // Admin management routes
 app.use("/api/admin", adminRouter);
+
+app.use("/api/chat", chatRouter);
 
 app.get("/", (req, res) => {
   res.send("API Đang chạy...");

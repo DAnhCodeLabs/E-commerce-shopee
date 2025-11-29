@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
-import Account from "../../models/accountModel.js"; // <-- ĐÃ THÊM IMPORT
-import validator from "validator"; // <-- ĐÃ THÊM IMPORT
-import { generateToken } from "./auth.controller.js"; // <-- ĐÃ THÊM IMPORT (Giả sử auth.controller ở cùng thư mục, nếu không 
+import Account from "../../models/accountModel.js";
+import validator from "validator";
+import { generateToken } from "./auth.controller.js";
 const userRegisterSeller = asyncHandler(async (req, res) => {
   const userId = req.user?.id || req.user?._id;
 
@@ -14,16 +14,53 @@ const userRegisterSeller = asyncHandler(async (req, res) => {
     addressSeller,
   } = req.body;
 
+  // Basic required field checks
   if (!shopName) {
     res.status(400);
     throw new Error("Vui lòng cung cấp tên cửa hàng");
   }
 
-  const userAccount = await Account.findById(userId);
+  if (!taxcode) {
+    res.status(400);
+    throw new Error("Vui lòng cung cấp mã số thuế (taxcode)");
+  }
 
+  if (!PlaceOfGrant) {
+    res.status(400);
+    throw new Error("Vui lòng cung cấp nơi cấp (PlaceOfGrant)");
+  }
+
+  // Ensure seller address has required fields (seller address is mandatory)
+  if (
+    !addressSeller ||
+    !addressSeller.street?.trim() ||
+    !addressSeller.ward?.trim() ||
+    !addressSeller.district?.trim() ||
+    !addressSeller.city?.trim()
+  ) {
+    res.status(400);
+    throw new Error(
+      "Vui lòng cung cấp đầy đủ địa chỉ người bán (street, ward, district, city)"
+    );
+  }
+
+  // If addressShop not provided or missing some fields, allow fallback to addressSeller for missing values.
+  // But ensure at least a city exists for shop (either addressShop.city or addressSeller.city)
+  const shopCity = (addressShop && addressShop.city) || addressSeller.city;
+  if (!shopCity) {
+    res.status(400);
+    throw new Error("Địa chỉ shop phải có thành phố (city)");
+  }
+
+  const userAccount = await Account.findById(userId);
   if (!userAccount) {
     res.status(404);
     throw new Error("Không tìm thấy tài khoản người dùng.");
+  }
+
+  if (!userAccount.isActive) {
+    res.status(403);
+    throw new Error("Tài khoản của bạn đã bị khóa.");
   }
 
   if (userAccount.role !== "user") {
@@ -33,18 +70,46 @@ const userRegisterSeller = asyncHandler(async (req, res) => {
     );
   }
 
-  userAccount.role = "seller";
-  userAccount.shop = {
+  // Build shop object with explicit defaults and fallback from seller address when shop address missing fields
+  const shopObj = {
     shopName,
     shopDescription: shopDescription || "",
     taxcode,
     PlaceOfGrant,
-    addressShop,
-    addressSeller,
+    addressShop: {
+      street: (addressShop && addressShop.street) || addressSeller.street || "",
+      ward: (addressShop && addressShop.ward) || addressSeller.ward || "",
+      district:
+        (addressShop && addressShop.district) || addressSeller.district || "",
+      city: (addressShop && addressShop.city) || addressSeller.city || "",
+      country:
+        (addressShop && addressShop.country) ||
+        addressSeller.country ||
+        "Việt Nam",
+    },
+    addressSeller: {
+      street: addressSeller.street || "",
+      ward: addressSeller.ward || "",
+      district: addressSeller.district || "",
+      city: addressSeller.city || "",
+      country: addressSeller.country || "Việt Nam",
+    },
+    shopLogo: "",
+    joinDate: new Date(),
+    productsCount: 0,
+    followers: 0,
+    response_rate: 100,
+    response_time: "trong vài giờ",
+    verificationStatus: "pending",
+    isActive: false,
   };
 
-  const updatedAccount = await userAccount.save();
+  // Apply role and shop atomically
+  userAccount.role = "seller";
+  userAccount.shop = shopObj;
+  userAccount.updatedAt = new Date();
 
+  const updatedAccount = await userAccount.save();
   const token = generateToken(updatedAccount);
 
   const userData = updatedAccount.toObject();
@@ -54,14 +119,14 @@ const userRegisterSeller = asyncHandler(async (req, res) => {
   delete userData.pendingEmail;
   delete userData.devices;
 
-  userData.id = userData._id;
+  userData.id = userData._1d || userData._id;
   userData.token = token;
   delete userData._id;
 
   res.status(200).json({
     success: true,
     message:
-      "Đăng ký bán hàng thành công! Tài khoản của bạn sẽ được nâng cấp sau 1 đến 3 ngày làm việc.",
+      "Đăng ký bán hàng thành công! Tài khoản của bạn sẽ được duyệt sau 1–3 ngày.",
     data: userData,
   });
 });
@@ -76,6 +141,13 @@ const userGetMyProfile = asyncHandler(async (req, res) => {
   if (!user) {
     res.status(404);
     throw new Error("Không tìm thấy tài khoản.");
+  }
+
+  if (!user.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
   }
 
   res.status(200).json({
@@ -94,6 +166,12 @@ const userUpdateProfile = asyncHandler(async (req, res) => {
   if (!user) {
     res.status(404);
     throw new Error("Không tìm thấy tài khoản");
+  }
+  if (!user.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
   }
 
   if (email && !validator.isEmail(email)) {

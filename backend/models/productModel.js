@@ -16,6 +16,11 @@ const ProductSchema = new mongoose.Schema(
         message: "Shop ID phải thuộc về tài khoản có vai trò seller",
       },
     },
+    location: {
+      city: { type: String, trim: true },
+      country: { type: String, trim: true, default: "Việt Nam" },
+    },
+
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, index: true },
     tags: [{ type: String, trim: true }],
@@ -37,7 +42,7 @@ const ProductSchema = new mongoose.Schema(
         value: { type: mongoose.Schema.Types.Mixed, required: true },
       },
     ],
-    images: [{ type: String }], 
+    images: [{ type: String }],
     video_info_list: [
       {
         duration: { type: Number },

@@ -29,7 +29,7 @@ const ProductDetail = () => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const response = await httpGet(`/product/seller-product/${id}`, {
+        const response = await httpGet(`/seller/products/${id}`, {
           showMessage: false,
         });
         setProduct(response.data);

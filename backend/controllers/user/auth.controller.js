@@ -121,6 +121,13 @@ const authLogin = asyncHandler(async (req, res) => {
       throw new Error("Mật khẩu không đúng");
     }
 
+    if (!account.isActive) {
+      res.status(403);
+      throw new Error(
+        "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+      );
+    }
+
     account.lastLogin = new Date();
     await account.save();
 
@@ -237,7 +244,7 @@ const authResetPassword = asyncHandler(async (req, res) => {
   account.password = newPassword;
   await account.save();
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
     message: "Mật khẩu đã được đặt lại thành công.",
   });
@@ -267,6 +274,13 @@ const userChangePassword = asyncHandler(async (req, res) => {
   if (!isMatch) {
     res.status(401);
     throw new Error("Mật khẩu cũ không đúng");
+  }
+
+  if (!user.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+    );
   }
 
   user.password = newPassword;

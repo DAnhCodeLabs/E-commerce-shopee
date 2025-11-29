@@ -165,7 +165,7 @@ const EditProduct = () => {
     const fetchProductData = async () => {
       try {
         const [productRes, categoriesRes] = await Promise.all([
-          httpGet(`/product/seller-product/${id}`),
+          httpGet(`/seller/products/${id}`),
           httpGet("/admin/categories?limit=1000"),
         ]);
 
@@ -245,7 +245,7 @@ const EditProduct = () => {
 
           if (formValues.category_id) {
             const attrsRes = await httpGet(
-              `/admin/attributes/${formValues.category_id}`
+              `/seller/attributes/category/${formValues.category_id}`
             );
             if (attrsRes.success) {
               setAttributes(attrsRes.data);
@@ -268,7 +268,7 @@ const EditProduct = () => {
   useEffect(() => {
     if (selectedCategoryId) {
       setIsAttributeLoading(true);
-      httpGet(`/admin/attributes/${selectedCategoryId}`)
+      httpGet(`/seller/attributes/category/${selectedCategoryId}`)
         .then((res) => {
           if (res.success) {
             setAttributes(res.data);
@@ -427,7 +427,7 @@ const EditProduct = () => {
     }
 
     try {
-      const res = await httpPut(`/product/update-product/${id}`, formData, {
+      const res = await httpPut(`/seller/product/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         showMessage: false,
       });

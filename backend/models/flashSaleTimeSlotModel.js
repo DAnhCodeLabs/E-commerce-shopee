@@ -1,4 +1,4 @@
-// models/flashSaleTimeSlotModel.js
+
 import mongoose from "mongoose";
 
 const flashSaleTimeSlotSchema = new mongoose.Schema(
@@ -21,7 +21,11 @@ const flashSaleTimeSlotSchema = new mongoose.Schema(
         "Giờ kết thúc phải có định dạng HH:MM",
       ],
     },
-    is_active: { type: Boolean, default: true, index: true },
+    is_active: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
   },
   {
     timestamps: true,

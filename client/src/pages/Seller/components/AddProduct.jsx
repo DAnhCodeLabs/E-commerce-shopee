@@ -164,7 +164,9 @@ const AddProduct = () => {
         setIsAttributeLoading(true);
         form.setFieldValue("attributes", undefined);
         try {
-          const res = await httpGet(`/admin/attributes/${selectedCategoryId}`);
+          const res = await httpGet(
+            `/seller/attributes/category/${selectedCategoryId}`
+          );
           if (res.success) setAttributes(res.data);
           else setAttributes([]);
         } catch (e) {
@@ -289,7 +291,7 @@ const AddProduct = () => {
     }
 
     try {
-      const res = await httpPost("/product/create-product", formData, {
+      const res = await httpPost("/seller/products", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         showMessage: false,
       });

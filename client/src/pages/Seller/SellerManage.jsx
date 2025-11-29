@@ -27,8 +27,24 @@ const items = [
       { key: "6", label: <Link to={"/seller/products"}>Tất cả sản phẩm</Link> },
       {
         key: "7",
-        label: <Link to={"/seller/create-product"}>Thêm sản phẩm mới</Link>,
+        label: (
+          <Link to={"/seller/flash-sale_registrations"}>
+            Quản lý sản phẩm flash sale
+          </Link>
+        ),
       },
+      {
+        key: "8",
+        label: <Link to={"/seller/orders"}>Quản lý đơn hàng</Link>,
+      },
+    ],
+  },
+  {
+    key: "grp",
+    label: "Hệ thống",
+    type: "group",
+    children: [
+      { key: "9", label: <Link to={"/seller/chat"}>Chăm sóc khách hàng</Link> },
     ],
   },
 ];

@@ -14,7 +14,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await httpGet("/admin/stats/accounts");
+        const response = await httpGet("/admin/dashboard/stats");
         setStats(response.data);
       } catch (error) {
         console.error("Failed to fetch stats:", error);

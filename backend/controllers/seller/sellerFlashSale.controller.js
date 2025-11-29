@@ -3,11 +3,35 @@ import mongoose from "mongoose";
 import Product from "../../models/productModel.js";
 import FlashSaleTimeSlot from "../../models/flashSaleTimeSlotModel.js";
 import FlashSaleProduct from "../../models/flashSaleProductModel.js";
+import Account from "../../models/accountModel.js";
 
 const sellerRegisterFlashSaleProduct = asyncHandler(async (req, res) => {
   const { product_id, time_slot_id, sale_date, flash_price, flash_stock } =
     req.body;
   const sellerShopId = req.user._id;
+
+  const sellerAccount = await Account.findById(sellerShopId).select(
+    "isActive shop.isActive"
+  );
+
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Không thể thực hiện hành động này."
+    );
+  }
+
+  if (!sellerAccount.shop || !sellerAccount.shop.isActive) {
+    res.status(403);
+    throw new Error(
+      "Cửa hàng của bạn đang bị khóa. Không thể đăng ký Flash Sale."
+    );
+  }
 
   if (
     !product_id ||
@@ -39,9 +63,22 @@ const sellerRegisterFlashSaleProduct = asyncHandler(async (req, res) => {
     );
   }
 
+  if (!product.isActive) {
+    res.status(400);
+    throw new Error(
+      "Sản phẩm này đang bị ẩn hoặc khóa, không thể đăng ký Flash Sale."
+    );
+  }
+
+  if (product.sellerStatus !== "NORMAL") {
+    res.status(400);
+    throw new Error(
+      "Sản phẩm này không ở trạng thái 'NORMAL' (Đang bán). Vui lòng kiểm tra lại."
+    );
+  }
+
   const timeSlot = await FlashSaleTimeSlot.findOne({
     _id: time_slot_id,
-    is_active: true,
   });
   if (!timeSlot) {
     res.status(404);
@@ -102,14 +139,149 @@ const sellerRegisterFlashSaleProduct = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: "Đăng ký sản phẩm vào Flash Sale thành công! Chờ Admin duyệt.",
+    message: "Đăng ký sản phẩm vào Flash Sale thành công.",
     data: createdRegistration,
+  });
+});
+
+const sellerGetMyRegistrations = asyncHandler(async (req, res) => {
+  const sellerShopId = req.user._id;
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const sortQuery = req.query.sort || "sale_date_desc";
+  const [sortField, sortOrder] = sortQuery.split("_");
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  const { search, admin_status, seller_status, time_slot_id, sale_date } =
+    req.query;
+
+  const baseMatchQuery = {
+    shop_id: new mongoose.Types.ObjectId(sellerShopId),
+  };
+
+  const filterQuery = {};
+
+  if (search) {
+    filterQuery["productInfo.name"] = { $regex: search, $options: "i" };
+  }
+  if (admin_status) {
+    filterQuery.admin_status = admin_status;
+  }
+  if (seller_status !== undefined) {
+    filterQuery.seller_status = seller_status === "true";
+  }
+  if (time_slot_id && mongoose.Types.ObjectId.isValid(time_slot_id)) {
+    filterQuery.time_slot_id = new mongoose.Types.ObjectId(time_slot_id);
+  }
+  if (sale_date) {
+    const startDate = new Date(sale_date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(sale_date);
+    endDate.setHours(23, 59, 59, 999);
+    filterQuery.sale_date = { $gte: startDate, $lte: endDate };
+  }
+
+  const aggregationPipeline = [
+    { $match: baseMatchQuery },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "product_id",
+        foreignField: "_id",
+        as: "productInfo",
+      },
+    },
+
+    {
+      $lookup: {
+        from: "flash_sale_time_slots",
+        localField: "time_slot_id",
+        foreignField: "_id",
+        as: "timeSlotInfo",
+      },
+    },
+    { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+    { $unwind: { path: "$timeSlotInfo", preserveNullAndEmptyArrays: true } },
+    { $match: filterQuery },
+    {
+      $project: {
+        _id: 1,
+        sale_date: 1,
+        original_price: 1,
+        flash_price: 1,
+        discount_percentage: 1,
+        flash_stock: 1,
+        sold_count: 1,
+        admin_status: 1,
+        seller_status: 1,
+        createdAt: 1,
+        productName: "$productInfo.name",
+        productImage: { $arrayElemAt: ["$productInfo.images", 0] },
+        timeSlotName: "$timeSlotInfo.name",
+        startTime: "$timeSlotInfo.start_time",
+      },
+    },
+
+    { $sort: sortOptions },
+
+    {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        paginationInfo: [{ $count: "totalItems" }],
+      },
+    },
+  ];
+
+  const result = await FlashSaleProduct.aggregate(aggregationPipeline);
+  const data = result[0].data;
+  const totalItems = result[0].paginationInfo[0]
+    ? result[0].paginationInfo[0].totalItems
+    : 0;
+  const totalPages = Math.ceil(totalItems / limit);
+
+  res.status(200).json({
+    success: true,
+    message: "Lấy danh sách đăng ký Flash Sale thành công!",
+    data,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems,
+      limit,
+    },
   });
 });
 
 const sellerDeleteFlashSaleRegistration = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const sellerShopId = req.user._id;
+
+  const sellerAccount = await Account.findById(sellerShopId).select(
+    "isActive shop.isActive"
+  );
+
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Không thể thực hiện hành động này."
+    );
+  }
+
+  if (!sellerAccount.shop || !sellerAccount.shop.isActive) {
+    res.status(403);
+    throw new Error(
+      "Cửa hàng của bạn đang bị khóa. Không thể thực hiện hành động này."
+    );
+  }
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
@@ -160,5 +332,6 @@ const sellerDeleteFlashSaleRegistration = asyncHandler(async (req, res) => {
 
 export const sellerFlashSaleController = {
   sellerRegisterFlashSaleProduct,
+  sellerGetMyRegistrations,
   sellerDeleteFlashSaleRegistration,
 };

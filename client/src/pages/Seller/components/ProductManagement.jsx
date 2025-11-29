@@ -67,7 +67,7 @@ const ProductManagement = () => {
           ...filters,
           ...params,
         };
-        const response = await httpGet("/product/seller-products", {
+        const response = await httpGet("/seller/products", {
           params: queryParams,
         });
 
@@ -268,7 +268,7 @@ const ProductManagement = () => {
 
   const handleDelete = async (record) => {
     try {
-      await httpDelete(`/product/seller-product/${record._id}`);
+      await httpDelete(`/seller/products/${record._id}`);
       message.success("Xóa sản phẩm thành công");
       fetchProducts();
     } catch (error) {

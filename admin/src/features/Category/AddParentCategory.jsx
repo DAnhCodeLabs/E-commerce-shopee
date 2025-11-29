@@ -91,7 +91,7 @@ const AddParentCategory = ({ onComplete }) => {
     }
 
     try {
-      await httpPost("/admin/category", formData, {
+      await httpPost("/admin/categories", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       form.resetFields();

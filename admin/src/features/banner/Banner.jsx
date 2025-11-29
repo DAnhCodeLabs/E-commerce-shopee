@@ -92,8 +92,9 @@ const Banner = () => {
 
   const handleDelete = async (record) => {
     try {
-      await httpDelete(`/admin/banners/${record._id}`);
+      const response = await httpDelete(`/admin/banners/${record._id}`);
       fetchBanners();
+      message.success(response.message);
     } catch (error) {
       console.error("Lỗi khi xóa banner:", error);
     }

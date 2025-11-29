@@ -1,8 +1,6 @@
 import express from "express";
 import authorizeRole from "../middleware/authorizeRole.js";
-import {
-  uploadSingleImage,
-} from "../middleware/upload.js";
+import { uploadSingleImage } from "../middleware/upload.js";
 
 // Import tất cả các controller của Admin
 import { adminAttributeController } from "../controllers/admin/adminAttribute.controller.js";
@@ -15,6 +13,18 @@ import { adminProductController } from "../controllers/admin/adminProduct.contro
 
 const adminRouter = express.Router();
 
+adminRouter.get(
+  "/categories",
+  authorizeRole(["admin", "seller"]),
+  adminCategoryController.adminGetCategories
+);
+
+adminRouter.get(
+  "/flash-sale/slots",
+  authorizeRole(["admin", "seller"]),
+  adminFlashSaleController.adminGetFlashSaleTimeSlots
+);
+
 // Áp dụng middleware_bảo_vệ cho TẤT CẢ các route bên dưới
 adminRouter.use(authorizeRole(["admin"]));
 
@@ -26,7 +36,7 @@ adminRouter.get(
 
 // --- Account (User) Routes ---
 adminRouter.get("/accounts", adminAccountController.adminGetAccounts);
-adminRouter.put(
+adminRouter.patch(
   "/accounts/:id/status",
   adminAccountController.adminUpdateAccountStatus
 );
@@ -50,7 +60,7 @@ adminRouter.post(
   adminBannerController.adminCreateBanner
 );
 adminRouter.get("/banners", adminBannerController.adminGetBanners);
-adminRouter.put(
+adminRouter.patch(
   "/banners/:id",
   uploadSingleImage("banners"),
   adminBannerController.adminUpdateBanner
@@ -68,7 +78,7 @@ adminRouter.delete(
   "/categories/:id",
   adminCategoryController.adminDeleteCategory
 );
-adminRouter.put(
+adminRouter.patch(
   "/categories/:id/toggle",
   adminCategoryController.adminToggleCategoryStatus
 );
@@ -78,16 +88,16 @@ adminRouter.post(
   "/flash-sale/slots",
   adminFlashSaleController.adminCreateFlashSaleTimeSlot
 );
+
 adminRouter.delete(
   "/flash-sale/slots/:id",
   adminFlashSaleController.adminDeleteFlashSaleTimeSlot
 );
-// (Lưu ý: Route duyệt sản phẩm flash sale của seller sẽ ở đây)
 
 // --- Product Routes ---
 adminRouter.get("/products", adminProductController.adminGetProducts);
 adminRouter.get("/products/:id", adminProductController.adminGetProductDetails);
-adminRouter.put(
+adminRouter.patch(
   "/products/:id/toggle",
   adminProductController.adminToggleProductModeration
 );

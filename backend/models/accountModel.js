@@ -100,44 +100,61 @@ const accountSchema = new mongoose.Schema({
     type: {
       shopName: {
         type: String,
-        required: [
-          function () {
-            return this.role === "seller";
-          },
-          "Tên cửa hàng là bắt buộc",
-        ],
+        required: function () {
+          return this.role === "seller";
+        },
         trim: true,
-        maxlength: [100, "Tên cửa hàng không được vượt quá 100 ký tự"],
+        maxlength: 100,
       },
       shopDescription: {
         type: String,
         trim: true,
-        maxlength: [500, "Mô tả không vượt quá 500 ký tự"],
+        maxlength: 500,
       },
+
       taxcode: { type: String, required: true },
       PlaceOfGrant: { type: String, required: true },
-      addressSeller: { type: String },
-      addressShop: { type: String },
+
+      addressShop: {
+        street: { type: String, trim: true },
+        ward: { type: String, trim: true },
+        district: { type: String, trim: true },
+        city: { type: String, trim: true },
+        country: { type: String, trim: true, default: "Việt Nam" },
+      },
+
+      addressSeller: {
+        street: { type: String, trim: true },
+        ward: { type: String, trim: true },
+        district: { type: String, trim: true },
+        city: { type: String, trim: true },
+        country: { type: String, trim: true, default: "Việt Nam" },
+      },
+
       shopLogo: { type: String, default: "" },
       joinDate: { type: Date, default: Date.now },
       productsCount: { type: Number, default: 0 },
+
+      followers: { type: Number, default: 0 },
+
+      response_rate: { type: Number, default: 100 },
+      response_time: { type: String, default: "trong vài giờ" },
+
       verificationStatus: {
         type: String,
         enum: ["pending", "approved", "rejected"],
         default: "pending",
       },
+
       isActive: { type: Boolean, default: false },
     },
     default: null,
-    required: [
-      function () {
-        return this.role === "seller";
-      },
-      "Thông tin cửa hàng là bắt buộc cho seller",
-    ],
+    required: function () {
+      return this.role === "seller";
+    },
   },
 
-  lastLogin: { type: Date },
+  lastLogin: { type: Date, default: Date.now },
   devices: [
     {
       deviceId: String,

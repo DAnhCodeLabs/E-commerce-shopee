@@ -19,7 +19,7 @@ const CreateAttribute = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      await httpPost("/admin/attribute", values);
+      await httpPost("/admin/attributes", values);
       navigate("/admin/attribute");
     } catch (error) {
       console.error("Lỗi khi tạo thuộc tính:", error);
@@ -85,7 +85,7 @@ const CreateAttribute = () => {
       span: 24,
     });
   }
-  
+
   return (
     <div>
       <BreadcrumbHeader

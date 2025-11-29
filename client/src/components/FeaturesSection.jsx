@@ -1,5 +1,5 @@
 import React from "react";
-import { assets } from "../../../../eCommerce/client/src/assets/assets";
+import { assets } from "../assets/assets";
 const FeaturesSection = () => {
   return (
     <div className="h-22 py-4 px-8 bg-white rounded-2xl shadow w-[1400px] mx-auto my-8">

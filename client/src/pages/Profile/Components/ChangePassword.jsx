@@ -9,7 +9,7 @@ const ChangePassword = () => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      const response = await httpPut("/auth/change-password", {
+      const response = await httpPut("/user/profile/change-password", {
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });

@@ -90,6 +90,7 @@ const adminGetProducts = asyncHandler(async (req, res) => {
         shopName: "$shopInfo.shop.shopName",
         categoryName: "$categoryInfo.display_name",
         ...(sortField !== "createdAt" && sortOptions),
+        location: 1,
       },
     },
     {

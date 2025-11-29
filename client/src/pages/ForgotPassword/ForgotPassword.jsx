@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { message } from "antd";
 import CommonForm from "../../components/common/CommonForm";
 import Loader from "../../components/common/Loader";
-import { httpPost } from "../../../../../eCommerce/client/src/services/httpService";
+import { httpPost } from "../../services/httpService";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();

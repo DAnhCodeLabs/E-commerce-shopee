@@ -134,3 +134,101 @@ body {
   font-family: FontAwesome !important;
   color: #fff;
 }
+
+
+
+
+
+
+.review-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Custom scrollbar for images if needed */
+.image-grid {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+}
+
+.image-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.image-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.image-grid::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 3px;
+}
+
+/* Tab mặc định */
+.custom-tabs .ant-tabs-tab {
+  @apply text-gray-600 font-medium;
+}
+
+/* Tab đang active */
+.custom-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #ee4d2d !important;
+}
+
+/* Hover tab */
+.custom-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: #ee4d2d;
+}
+
+/* Gạch underline của tab active */
+.custom-tabs .ant-tabs-ink-bar {
+  background: #ee4d2d !important;
+}
+
+
+/* src/index.css */
+
+@layer utilities {
+  .animate-enter {
+    animation: chatEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-exit {
+    animation: chatExit 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes chatEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chatExit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+}
+
+/* Thanh cuộn siêu mảnh cho khung chat */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+.chat-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}

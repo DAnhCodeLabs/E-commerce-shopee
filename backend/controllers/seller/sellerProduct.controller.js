@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Product from "../../models/productModel.js";
 import { deleteFromCloudinary } from "../../config/cloudinary.js";
 import Category from "../../models/categoryModel.js";
-import Account from "../../models/accountModel.js"; 
+import Account from "../../models/accountModel.js";
 import {
   calculateSalePrice,
   findOrphanedImages,
@@ -16,6 +16,11 @@ const sellerCreateProduct = asyncHandler(async (req, res) => {
   if (!sellerAccount || sellerAccount.role !== "seller") {
     res.status(403);
     throw new Error("Tài khoản không phải là người bán.");
+  }
+
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error("Tài khoản của bạn đã bị khóa. Không thể đăng sản phẩm.");
   }
 
   if (
@@ -83,6 +88,10 @@ const sellerCreateProduct = asyncHandler(async (req, res) => {
     images: images,
     shop_id: sellerId,
     sellerStatus: status || "DRAFT",
+    location: {
+      city: sellerAccount?.shop?.addressShop?.city || "",
+      country: sellerAccount?.shop?.addressShop?.country || "Việt Nam",
+    },
   };
 
   try {
@@ -190,9 +199,26 @@ const sellerCreateProduct = asyncHandler(async (req, res) => {
   });
 });
 
-// ĐÃ ĐỔI TÊN: sellerGetMyProducts -> sellerGetProducts
 const sellerGetProducts = asyncHandler(async (req, res) => {
   const sellerShopId = req.user._id;
+
+  const sellerAccount = await Account.findById(sellerShopId).select(
+    "isActive shop.isActive"
+  );
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Không thể xem danh sách sản phẩm."
+    );
+  }
+  if (!sellerAccount.shop) {
+    res.status(403);
+    throw new Error("Tài khoản chưa đăng ký shop.");
+  }
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -285,6 +311,18 @@ const sellerGetProductDetails = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const sellerShopId = req.user._id;
 
+  const sellerAccount = await Account.findById(sellerShopId).select("isActive");
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Không thể xem chi tiết sản phẩm."
+    );
+  }
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("ID sản phẩm không hợp lệ.");
@@ -315,6 +353,26 @@ const sellerGetProductDetails = asyncHandler(async (req, res) => {
 const sellerUpdateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const sellerShopId = req.user._id;
+
+  const sellerAccount = await Account.findById(sellerShopId).select(
+    "isActive shop.isActive"
+  );
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error(
+      "Tài khoản của bạn đã bị khóa. Không thể cập nhật sản phẩm."
+    );
+  }
+  if (!sellerAccount.shop || !sellerAccount.shop.isActive) {
+    res.status(403);
+    throw new Error(
+      "Cửa hàng của bạn đang bị khóa. Không thể cập nhật sản phẩm."
+    );
+  }
   const product = await Product.findOne({
     _id: id,
     shop_id: sellerShopId,
@@ -356,6 +414,10 @@ const sellerUpdateProduct = asyncHandler(async (req, res) => {
     description,
     category_id,
     sellerStatus: status || "DRAFT",
+    location: {
+      city: sellerAccount?.shop?.addressShop?.city || "",
+      country: sellerAccount?.shop?.addressShop?.country || "Việt Nam",
+    },
   };
 
   try {
@@ -481,6 +543,22 @@ const sellerUpdateProduct = asyncHandler(async (req, res) => {
 const sellerDeleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const sellerShopId = req.user._id;
+
+  const sellerAccount = await Account.findById(sellerShopId).select(
+    "isActive shop.isActive"
+  );
+  if (!sellerAccount) {
+    res.status(404);
+    throw new Error("Không tìm thấy tài khoản người bán.");
+  }
+  if (!sellerAccount.isActive) {
+    res.status(403);
+    throw new Error("Tài khoản của bạn đã bị khóa. Không thể xóa sản phẩm.");
+  }
+  if (!sellerAccount.shop || !sellerAccount.shop.isActive) {
+    res.status(403);
+    throw new Error("Cửa hàng của bạn đang bị khóa. Không thể xóa sản phẩm.");
+  }
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);

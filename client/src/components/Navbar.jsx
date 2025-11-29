@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Dropdown, Input, QRCode, Space, Menu } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaFacebook,
   FaInstagram,
@@ -17,9 +17,16 @@ import CommonButton from "./common/CommonButton";
 import { useAuth } from "../contexts/AuthContext";
 
 const Navbar = () => {
-  const [text, setText] = React.useState(
+  const [text, setText] = useState(
     `https://shopee.vn/download?pid=Organic&c=lp_home_qr`
   );
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
+
+  const handleSearch = () => {
+    if (!keyword.trim()) return;
+    navigate(`/search?keyword=${encodeURIComponent(keyword.trim())}`);
+  };
   const { token, user, logout } = useAuth();
 
   // Sửa itemsLeft - sử dụng Menu component
@@ -49,7 +56,7 @@ const Navbar = () => {
         },
         {
           key: "2",
-          label: <Link to="/orders">Đơn mua</Link>,
+          label: <Link to="/user/purchase">Đơn mua</Link>,
         },
         {
           key: "3",
@@ -157,13 +164,18 @@ const Navbar = () => {
           </div>
 
           <div className="flex-1">
-            {/* Kiểm tra CommonInput chỉ trả về một element */}
             <CommonInput
               className="w-full text-sm sm:text-base"
               placeholder="Tìm kiếm sản phẩm..."
               allowClear
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onPressEnter={handleSearch}
               suffix={
-                <CommonButton className="!bg-primary hover:!outline-none p-2 sm:p-3">
+                <CommonButton
+                  className="!bg-primary hover:!outline-none p-2 sm:p-3"
+                  onClick={handleSearch}
+                >
                   <FaSearch className="text-white text-base sm:text-lg" />
                 </CommonButton>
               }
@@ -171,12 +183,14 @@ const Navbar = () => {
           </div>
 
           {/* Giỏ hàng */}
-          <div className="ml-2 sm:ml-4 text-xl sm:text-2xl cursor-pointer hover:text-white/60 transition-all ease-in-out relative">
-            <FaCartShopping />
-            <div className="absolute -top-3 -right-7 min-w-[20px] h-5 bg-white text-black text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center px-1.5 sm:px-2 border-2 border-primary">
-              +99
+          <Link to={"/cart"}>
+            <div className="ml-2 sm:ml-4 text-xl sm:text-2xl cursor-pointer hover:text-white/60 transition-all ease-in-out relative">
+              <FaCartShopping />
+              <div className="absolute -top-3 -right-7 min-w-[20px] h-5 bg-white text-black text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center px-1.5 sm:px-2 border-2 border-primary">
+                +99
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

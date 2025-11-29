@@ -4,9 +4,9 @@ import CommonForm from "../../components/common/CommonForm";
 import { Checkbox, Divider, Flex, message } from "antd";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { httpPost } from "../../../../../eCommerce/client/src/services/httpService";
 import { useAuth } from "../../contexts/AuthContext";
 import Loader from "../../components/common/Loader";
+import { httpPost } from "../../services/httpService";
 
 const Login = () => {
   const [state, setState] = useState("login");
@@ -18,7 +18,6 @@ const Login = () => {
     setLoading(true);
     try {
       if (state === "register") {
-        // Không cần gán kết quả cho biến vì thông báo thành công đã được tự động xử lý
         const response = await httpPost("/auth/register", {
           username: values.username,
           email: values.email,

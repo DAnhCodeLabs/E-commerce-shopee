@@ -17,7 +17,7 @@ const Banner = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpGet("/auth/banner");
+        const response = await httpGet("/banners/active");
         const bannerList = response?.data;
         if (Array.isArray(bannerList)) setBanners(bannerList);
         else setBanners([]);

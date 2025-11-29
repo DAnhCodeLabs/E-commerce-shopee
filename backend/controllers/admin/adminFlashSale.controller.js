@@ -35,6 +35,48 @@ const adminCreateFlashSaleTimeSlot = asyncHandler(async (req, res) => {
     data: createdSlot,
   });
 });
+const adminGetFlashSaleTimeSlots = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const sortQuery = req.query.sort || "start_time_asc";
+  const [sortField, sortOrder] = sortQuery.split("_");
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+  const { search, is_active } = req.query;
+  const matchQuery = {};
+
+  if (search) {
+    matchQuery.name = { $regex: search, $options: "i" };
+  }
+
+  if (is_active !== undefined) {
+    matchQuery.is_active = is_active === "true";   
+  }
+
+  const [timeSlots, totalItems] = await Promise.all([
+    FlashSaleTimeSlot.find(matchQuery)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+
+    FlashSaleTimeSlot.countDocuments(matchQuery),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  res.status(200).json({
+    success: true,
+    message: "Lấy danh sách mốc thời gian thành công!",
+    data: timeSlots,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems,
+      limit,
+    },
+  });
+});
 
 const adminDeleteFlashSaleTimeSlot = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -70,5 +112,6 @@ const adminDeleteFlashSaleTimeSlot = asyncHandler(async (req, res) => {
 
 export const adminFlashSaleController = {
   adminCreateFlashSaleTimeSlot,
+  adminGetFlashSaleTimeSlots,
   adminDeleteFlashSaleTimeSlot,
 };

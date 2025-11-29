@@ -23,7 +23,7 @@ const Address = () => {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const response = await httpGet("/auth/address");
+      const response = await httpGet("/user/address");
       setAddresses(response.addresses || []);
     } catch (error) {
       console.error("Error fetching addresses:", error);
@@ -90,12 +90,12 @@ const Address = () => {
 
       if (editingAddress) {
         const response = await httpPut(
-          `/auth/address/${editingAddress._id}`,
+          `/user/address/${editingAddress._id}`,
           addressData
         );
         message.success(response.message);
       } else {
-        const response = await httpPost("/auth/address", addressData);
+        const response = await httpPost("/user/address", addressData);
         message.success(response.message);
       }
 
@@ -160,7 +160,7 @@ const Address = () => {
       centered: true,
       onOk: async () => {
         try {
-          await httpDelete(`/auth/address/${addressId}`);
+          await httpDelete(`/user/address/${addressId}`);
           await fetchAddresses();
         } catch (error) {
           console.error("Failed to delete address:", error);

@@ -7,11 +7,14 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { SocketContextProvider } from './contexts/SocketContext.jsx';
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
-      <App />
+      <SocketContextProvider>
+        <App />
+      </SocketContextProvider>
     </AuthProvider>
   </BrowserRouter>
 );

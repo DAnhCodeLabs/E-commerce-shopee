@@ -1,21 +1,32 @@
+// file: src/App.jsx
+
 import React from "react";
 import { useLocation } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useEffect } from "react";
-import { httpGet } from "./services/httpService";
 import { useAuth } from "./contexts/AuthContext";
+import { httpGet } from "./services/httpService";
+import FloatingChat from "./components/ChatWidget/FloatingChat";
 
 const App = () => {
-  const { setUser, setToken, token: authToken } = useAuth();
+  const {
+    setUser,
+    setToken,
+    token: authToken,
+    loading: authLoading,
+  } = useAuth();
 
   useEffect(() => {
     const fetchLatestUserData = async () => {
-      if (!authToken) return;
+      if (authLoading || !authToken) {
+        return;
+      }
+
 
       try {
-        const response = await httpGet("/auth/user");
+        const response = await httpGet("/user/profile/me");
         const latestUser = response.data;
 
         localStorage.setItem("user", JSON.stringify(latestUser));
@@ -33,7 +44,10 @@ const App = () => {
     };
 
     fetchLatestUserData();
-  }, []);
+
+    // 4. Dependency array mới:
+    //    Effect này sẽ chạy lại mỗi khi authLoading hoặc authToken thay đổi
+  }, [authLoading, authToken, setUser, setToken]);
 
   const location = useLocation();
   const hideLayout = [
@@ -48,6 +62,7 @@ const App = () => {
       {!hideLayout && <Navbar />}
       <div className="flex-1">
         <AppRoutes />
+        <FloatingChat />
       </div>
       <Footer />
     </div>

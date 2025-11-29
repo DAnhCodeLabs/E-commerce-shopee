@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Button, Card, Image, Tag } from "antd";
+import { Button, Card, Image, message, Tag } from "antd";
 import { httpDelete, httpGet, httpPatch } from "../../services/httpService";
 import BreadcrumbHeader from "../../components/BreadcrumbHeader";
 import FilterPanel from "../../components/FilterPanel";
@@ -61,7 +61,7 @@ const Category = () => {
   const handleDelete = async (record) => {
     try {
       setLoading(true);
-      await httpDelete(`/admin/category/${record._id}`);
+      await httpDelete(`/admin/categories/${record._id}`);
       fetchCategories();
     } catch (error) {
       console.error("Lỗi khi xóa danh mục:", error);
@@ -72,9 +72,10 @@ const Category = () => {
    const handleUpdateStatus = async (record) => {
      try {
        setLoading(true);
-       const apiUrl = `/admin/category/${record._id}/status`;
-       await httpPatch(apiUrl);
+       const apiUrl = `/admin/categories/${record._id}/toggle`;
+       const response = await httpPatch(apiUrl);
        fetchCategories();
+       message.success(response.message)
      } catch (error) {
        console.error("Lỗi khi cập nhật trạng thái:", error);
        setLoading(false);

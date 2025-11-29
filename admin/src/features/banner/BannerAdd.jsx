@@ -30,7 +30,7 @@ const BannerAdd = () => {
         formData.append("image", values.image[0].originFileObj);
       }
 
-      await httpPost("/admin/banner", formData, {
+      await httpPost("/admin/banners", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

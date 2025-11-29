@@ -7,8 +7,8 @@ import {
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { httpPost } from "../../../../../eCommerce/client/src/services/httpService";
 import Loader from "../../components/common/Loader";
+import { httpPost } from "../../services/httpService";
 
 const { Step } = Steps;
 
@@ -29,7 +29,7 @@ const VerifyEmail = () => {
   const onOtpFinish = async (values) => {
     try {
       setLoading(true);
-      const response = await httpPost("/auth/verifi-email", {
+      const response = await httpPost("/auth/verify-otp", {
         email: email,
         otp: values.otp,
       });

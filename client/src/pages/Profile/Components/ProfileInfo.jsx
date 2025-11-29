@@ -162,7 +162,7 @@ const ProfileInfo = () => {
         updateData.birthDate = birthDate.toISOString();
       }
 
-      const response = await httpPatch("/auth/update-profile", updateData);
+      const response = await httpPatch("/user/profile/me", updateData);
 
       if (response.success && response.data) {
         // Sửa: Đảm bảo response.data no token (nếu backend trả có, loại bỏ)

@@ -54,12 +54,6 @@ const flashSaleProductSchema = new mongoose.Schema(
       default: 0,
     },
 
-    admin_status: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-
     seller_status: {
       type: Boolean,
       default: true,

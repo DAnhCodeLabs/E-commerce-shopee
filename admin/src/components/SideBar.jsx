@@ -41,6 +41,15 @@ const SideBar = () => {
           icon: <FaProductHunt />,
         },
         {
+          key: "flashsaletimeslot",
+          label: (
+            <Link to="/admin/flashsaletimeslot-list">
+              Quản lý thời gian Flash Sale
+            </Link>
+          ),
+          icon: <FaProductHunt />,
+        },
+        {
           key: "sellerIsActive",
           label: (
             <Link to="/admin/seller-is_active">

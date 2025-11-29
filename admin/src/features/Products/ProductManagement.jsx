@@ -86,7 +86,7 @@ const ProductManagement = () => {
           ...params,
         };
 
-        const apiEndpoint = "/product/admin-products";
+        const apiEndpoint = "/admin/products";
         const response = await httpGet(apiEndpoint, {
           params: queryParams,
         });
@@ -276,7 +276,7 @@ const ProductManagement = () => {
   const handleUpdateStatus = async (record) => {
     try {
       const response = await httpPatch(
-        `/product/admin-product/${record._id}/toggle-moderation`
+        `/admin/products/${record._id}/toggle`
       );
 
       if (response.success) {

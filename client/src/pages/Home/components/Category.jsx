@@ -11,7 +11,7 @@ const Category = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await httpGet("/auth/categories");
+        const response = await httpGet("/categories");
         setCategories(response.data || []);
       } catch (err) {
         setError("Không thể tải danh sách danh mục. Vui lòng thử lại sau.");

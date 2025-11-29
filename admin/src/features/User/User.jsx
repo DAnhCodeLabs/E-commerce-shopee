@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Tag, Input, Select, Space, Button, Card } from "antd";
+import { Tag, Input, Select, Space, Button, Card, message } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -105,10 +105,11 @@ const User = () => {
 
   const handleUpdateStatus = async (record) => {
     try {
-      await httpPatch(`/admin/accounts/${record._id}/status`, {
+      const response = await httpPatch(`/admin/accounts/${record._id}/status`, {
         isActive: !record.isActive,
       });
       fetchAccounts();
+      message.success(response.message)
     } catch (error) {
       console.error("Failed to update status:", error);
     }

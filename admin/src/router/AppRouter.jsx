@@ -15,6 +15,8 @@ import CreateAttribute from "../features/attribute/CreateAttribute";
 import SellerIsActive from "../features/User/SellerIsActive";
 import ProductManagement from "../features/Products/ProductManagement";
 import ProductDetail from "../features/Products/ProductDetail";
+import FlashSaleTimeSlotList from "../features/FlashSaleTimeSlot/FlashSaleTimeSlotList";
+import CreateFlashSaleTimeSlotForm from "../features/FlashSaleTimeSlot/CreateFlashSaleTimeSlotForm";
 
 const ProtectedRoute = ({ token, redirectPath = "/login" }) => {
   const storedToken = localStorage.getItem("token");
@@ -47,6 +49,14 @@ const AppRouter = () => {
             <Route path="create-attribute" element={<CreateAttribute />} />
             <Route path="products" element={<ProductManagement />} />
             <Route path="product/:id" element={<ProductDetail />} />
+            <Route
+              path="flashsaletimeslot-list"
+              element={<FlashSaleTimeSlotList />}
+            />
+            <Route
+              path="create-flashsaletimeslot"
+              element={<CreateFlashSaleTimeSlotForm />}
+            />
           </Route>
         </Route>
         <Route path="/login" element={<Login />} />

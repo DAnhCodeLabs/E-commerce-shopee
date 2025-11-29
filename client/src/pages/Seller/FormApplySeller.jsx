@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Divider, Form, message } from "antd";
 import CommonForm from "../../components/common/CommonForm";
-import { assets } from "../../../../../eCommerce/client/src/assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { httpPost } from "../../../../../eCommerce/client/src/services/httpService";
+import { httpPost } from "../../services/httpService";
+import { assets } from "../../assets/assets";
 
 const FormApplySeller = () => {
   const navigate = useNavigate();
@@ -14,21 +14,37 @@ const FormApplySeller = () => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      const response = await httpPost("/auth/register-seller", {
+
+      const payload = {
         shopName: values.shopName,
         shopDescription: values.shopDescription,
         taxcode: values.taxcode,
         PlaceOfGrant: values.PlaceOfGrant,
-        addressSeller: values.addressSeller,
-        addressShop: values.addressShop,
-      });
+
+        addressSeller: {
+          street: values.addressSeller?.street || "",
+          ward: values.addressSeller?.ward || "",
+          district: values.addressSeller?.district || "",
+          city: values.addressSeller?.city || "",
+          country: values.addressSeller?.country || "Việt Nam",
+        },
+
+        addressShop: {
+          street: values.addressShop?.street || "",
+          ward: values.addressShop?.ward || "",
+          district: values.addressShop?.district || "",
+          city: values.addressShop?.city || "",
+          country: values.addressShop?.country || "Việt Nam",
+        },
+      };
+
+      const response = await httpPost("/user/profile/register-seller", payload);
       message.success(response.message);
 
-      // Sửa: Extract user data, loại bỏ token trước khi lưu/set
       const fullData = response.data;
       const userData = { ...fullData };
       const token = userData.token;
-      delete userData.token; // Loại bỏ token khỏi user object
+      delete userData.token;
 
       setTimeout(() => {
         localStorage.setItem("user", JSON.stringify(userData));
@@ -53,39 +69,89 @@ const FormApplySeller = () => {
       rules: [{ required: true, message: "Please input your shop name!" }],
     },
     {
-      type: "text",
+      type: "textarea",
       name: "shopDescription",
       label: "Mô tả cửa hàng",
-      placeholder: "Nhập tên cửa hàng",
-      rules: [{ required: true, message: "Please input your shop name!" }],
+      placeholder: "Nhập mô tả cửa hàng",
     },
     {
       type: "text",
       name: "taxcode",
-      label: "Tax Code (MST - CCCD)",
-      placeholder: "Enter your tax code",
+      label: "Tax Code (MST / CCCD)",
+      placeholder: "Nhập mã số thuế hoặc CCCD",
       rules: [{ required: true, message: "Please input your tax code!" }],
     },
     {
       type: "text",
       name: "PlaceOfGrant",
       label: "Nơi cấp",
-      placeholder: "Nơi Cấp",
+      placeholder: "Nhập nơi cấp MST/CCCD",
       rules: [{ required: true, message: "Please input place of grant!" }],
     },
+
     {
-      type: "text",
-      name: "addressSeller",
-      label: "Địa chỉ nhà riêng",
-      placeholder: "Nhập địa chỉ nhà riêng",
-      rules: [{ required: true, message: "Please input your address!" }],
+      type: "group",
+      label: "Địa chỉ nhà riêng (Seller Address)",
+      className: "grid grid-cols-4 gap-4",
+
+      fields: [
+        {
+          type: "text",
+          name: "addressSeller.street",
+          label: "Số nhà / Đường",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressSeller.ward",
+          label: "Phường / Xã",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressSeller.district",
+          label: "Quận / Huyện",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressSeller.city",
+          label: "Thành phố",
+          rules: [{ required: true }],
+        },
+      ],
     },
     {
-      type: "text",
-      name: "addressShop",
-      label: "Địa chỉ lấy hàng",
-      placeholder: "Nhập địa chỉ lấy hàng",
-      rules: [{ required: true, message: "Please input shop address!" }],
+      type: "group",
+      label: "Địa chỉ lấy hàng (Shop Address)",
+      className: "grid grid-cols-4 gap-4",
+
+      fields: [
+        {
+          type: "text",
+          name: "addressShop.street",
+          label: "Số nhà / Đường",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressShop.ward",
+          label: "Phường / Xã",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressShop.district",
+          label: "Quận / Huyện",
+          rules: [{ required: true }],
+        },
+        {
+          type: "text",
+          name: "addressShop.city",
+          label: "Thành phố",
+          rules: [{ required: true }],
+        },
+      ],
     },
   ];
 

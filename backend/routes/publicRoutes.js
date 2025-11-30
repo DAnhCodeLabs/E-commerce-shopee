@@ -28,4 +28,9 @@ publicRouter.get("/search/products", productSearchController.searchProducts);
 publicRouter.get("/products/:slug", productController.getProductBySlug);
 publicRouter.get("/shops/:id/info", productController.getShopInfo);
 
+publicRouter.get(
+  "/products/:id/related-ai",
+  productController.getRelatedProductsAI
+);
+
 export default publicRouter;

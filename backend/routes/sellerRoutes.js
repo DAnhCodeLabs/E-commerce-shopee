@@ -22,7 +22,7 @@ sellerRouter.get(
   sellerProductController.sellerGetProductDetails
 );
 sellerRouter.put(
-  "/products/:id",
+  "/product/:id",
   uploadProductImages("products"),
   sellerProductController.sellerUpdateProduct
 );

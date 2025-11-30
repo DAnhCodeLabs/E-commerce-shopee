@@ -425,7 +425,7 @@ const EditProduct = () => {
       formData.append("stock", values.stock);
       formData.append("discount_percentage", values.discount_percentage || 0);
     }
-
+  
     try {
       const res = await httpPut(`/seller/product/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

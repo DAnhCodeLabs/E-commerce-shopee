@@ -26,6 +26,7 @@ import PurchasePage from "../pages/Purchase/PurchasePage";
 import OrderDetailsPage from "../pages/Purchase/OrderDetailsPage";
 import SellerOrderPage from "../pages/Seller/Order/SellerOrderPage";
 import SellerChatPage from "../pages/Seller/Chat/SellerChatPage";
+import WishlistPage from "../pages/Profile/Components/WishlistPage";
 
 const AppRoutes = () => {
   return (
@@ -82,6 +83,7 @@ const AppRoutes = () => {
           <Route path="address" element={<Address />} />
           <Route path="password" element={<ChangePassword />} />
           <Route path="privacy-settings" element={<PrivacySettings />} />
+          <Route path="wishlist" element={<WishlistPage />} />
         </Route>
         <Route
           path="/seller"

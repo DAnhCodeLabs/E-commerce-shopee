@@ -15,6 +15,7 @@ const Profile = () => {
     if (path.includes("/profile/address")) return "address";
     if (path.includes("/profile/password")) return "password";
     if (path.includes("/profile/privacy-settings")) return "privacy";
+    if (path.includes("/profile/wishlist")) return "wishlist";
     if (path === "/profile" || path.includes("/profile/info")) return "profile";
     return "profile";
   };
@@ -52,9 +53,9 @@ const Profile = () => {
       ],
     },
     {
-      key: "orders",
+      key: "wishlist",
       icon: <FaClipboardList />,
-      label: "Đơn mua",
+      label: <Link to={"/profile/wishlist"}>Sản phẩm yêu thích</Link>,
     },
   ];
 

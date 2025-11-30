@@ -63,6 +63,10 @@ const Navbar = () => {
           label: <Link to="/settings">Cài đặt</Link>,
         },
         {
+          key: "5",
+          label: <Link to="/profile/wishlist">Sản phẩm yêu tích</Link>,
+        },
+        {
           type: "divider",
         },
         {

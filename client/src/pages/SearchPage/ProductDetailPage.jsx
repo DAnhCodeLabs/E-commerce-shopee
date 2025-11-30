@@ -14,6 +14,8 @@ import ProductDescription from "./components/ProductDescription";
 import ProductAttributes from "./components/ProductAttributes";
 import ProductReviews from "./components/ProductReviews";
 import Loader from "../../components/common/Loader";
+import RelatedProducts from "../../components/Product/RelatedProducts";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -23,7 +25,12 @@ const ProductDetailPage = () => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const { user } = useAuth(); // Lấy thông tin user đang đăng nhập
+  // ... state cũ
 
+  // --- THÊM STATE CHO WISHLIST ---
+  const [isLiked, setIsLiked] = useState(false);
+  const [currentLikeCount, setCurrentLikeCount] = useState(0);
   // Fetch product data từ API
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,6 +39,15 @@ const ProductDetailPage = () => {
         const response = await httpGet(`/products/${slug}`);
         if (response.success) {
           setProduct(response.data);
+          setCurrentLikeCount(response.data.liked_count || 0);
+          if (user && user.wishlist) {
+            const isInWishlist = user.wishlist.some(
+              (item) =>
+                (typeof item === "string" ? item : item._id) ===
+                response.data._id
+            );
+            setIsLiked(isInWishlist);
+          }
         } else {
           setError("Không tìm thấy sản phẩm");
         }
@@ -46,7 +62,30 @@ const ProductDetailPage = () => {
     if (slug) {
       fetchProduct();
     }
-  }, [slug]);
+  }, [slug, user]);
+
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      message.warning("Vui lòng đăng nhập để thêm vào yêu thích!");
+      return;
+    }
+
+    // Optimistic Update (Cập nhật UI trước cho mượt)
+    const newIsLiked = !isLiked;
+    setIsLiked(newIsLiked);
+    setCurrentLikeCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
+
+    try {
+      await httpPost("/user/wishlist/toggle",{ productId: product._id });
+      // Backend trả về kết quả chính xác, có thể set lại nếu muốn chắc chắn
+      // const res = await ...; setIsLiked(res.isLiked);
+    } catch (error) {
+      // Revert nếu lỗi
+      setIsLiked(!newIsLiked);
+      setCurrentLikeCount((prev) => (!newIsLiked ? prev + 1 : prev - 1));
+      message.error("Lỗi cập nhật yêu thích");
+    }
+  };
   const handleVariantChange = useCallback((model) => {
     console.log("Variant Changed:", model);
     setSelectedModel(model);
@@ -191,7 +230,7 @@ const ProductDetailPage = () => {
                   name={product.name}
                   item_rating={product.item_rating}
                   historical_sold={product.historical_sold}
-                  liked_count={product.liked_count}
+                  liked_count={currentLikeCount}
                   condition={product.condition}
                   location={product.location}
                 />
@@ -218,6 +257,8 @@ const ProductDetailPage = () => {
                   quantity={quantity}
                   availableStock={availableStock}
                   onAddToCart={handleAddToCart}
+                  isLiked={isLiked}
+                  onToggleWishlist={handleToggleWishlist}
                   onBuyNow={handleBuyNow}
                   loading={addingToCart}
                 />
@@ -288,6 +329,7 @@ const ProductDetailPage = () => {
             ]}
           />
         </div>
+        <RelatedProducts productId={product._id} />
       </div>
     </div>
   );

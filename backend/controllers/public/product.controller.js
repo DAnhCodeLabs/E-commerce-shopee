@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Product from "../../models/productModel.js";
 import asyncHandler from "express-async-handler";
 import Account from "../../models/accountModel.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
@@ -192,7 +193,156 @@ const getShopInfo = asyncHandler(async (req, res) => {
   });
 });
 
+// Khởi tạo Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+
+const getRelatedProductsAI = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Hàm phụ: Lấy sản phẩm Fallback (Bán chạy/Mới nhất)
+  const getFallbackProducts = async (categoryId, excludeId) => {
+    console.log("--- CHẠY LOGIC FALLBACK (DỰ PHÒNG) ---");
+    return await Product.find({
+      category_id: categoryId,
+      _id: { $ne: excludeId },
+      isActive: true,
+    })
+      .sort({ historical_sold: -1, createdAt: -1 }) // Ưu tiên bán chạy, rồi đến mới nhất
+      .limit(12)
+      .select(
+        "name image images price sale_price slug item_rating sold_count location"
+      );
+  };
+
+  try {
+    // 1. Lấy thông tin sản phẩm đang xem
+    const targetProduct = await Product.findById(id).select(
+      "name category_id attributes description price"
+    );
+
+    if (!targetProduct) {
+      res.status(404);
+      throw new Error("Sản phẩm không tồn tại");
+    }
+
+    // 2. Lấy danh sách "ứng viên" (Pre-filter từ DB)
+    const candidates = await Product.find({
+      category_id: targetProduct.category_id,
+      _id: { $ne: targetProduct._id },
+      isActive: true,
+    })
+      .select("_id name price attributes")
+      .limit(30)
+      .lean();
+
+    console.log(`Tìm thấy ${candidates.length} ứng viên trong DB`);
+
+    // --- CHECK 1: Nếu DB không có sản phẩm nào khác cùng danh mục ---
+    if (candidates.length === 0) {
+      // Thử tìm các sản phẩm khác danh mục (Gợi ý ngẫu nhiên hoặc bán chạy toàn sàn)
+      const randomFallback = await Product.find({
+        _id: { $ne: id },
+        isActive: true,
+      }).limit(20);
+      return res
+        .status(200)
+        .json({
+          success: true,
+          source: "fallback_random",
+          data: randomFallback,
+        });
+    }
+
+    // 3. Chuẩn bị Prompt
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const prompt = `
+      Sản phẩm gốc: "${targetProduct.name}".
+      Danh sách ứng viên: ${JSON.stringify(candidates)}.
+      Hãy chọn 18 ID sản phẩm tương tự nhất.
+      Nếu không có cái nào thực sự giống, hãy chọn đại 6 cái tốt nhất trong danh sách.
+      BẮT BUỘC trả về JSON Array các ID. Ví dụ: ["id1", "id2"]. Không viết thêm gì khác.
+    `;
+
+    // 4. Gọi AI
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    console.log("Gemini Response Raw:", responseText); // Debug xem AI trả về gì
+
+    // 5. Parse kết quả
+    const cleanJson = responseText.replace(/```json|```/g, "").trim();
+    let recommendedIds = [];
+
+    try {
+      recommendedIds = JSON.parse(cleanJson);
+    } catch (e) {
+      console.error("Lỗi Parse JSON từ AI, chuyển sang Fallback");
+    }
+
+    // --- CHECK 2: Nếu AI trả về rỗng hoặc lỗi parse ---
+    if (!Array.isArray(recommendedIds) || recommendedIds.length === 0) {
+      const fallbackData = await getFallbackProducts(
+        targetProduct.category_id,
+        id
+      );
+      return res
+        .status(200)
+        .json({
+          success: true,
+          source: "fallback_ai_empty",
+          data: fallbackData,
+        });
+    }
+
+    // 6. Query lại DB lấy full info
+    const finalProducts = await Product.find({
+      _id: { $in: recommendedIds },
+    }).select(
+      "name image images price sale_price slug item_rating sold_count location"
+    );
+
+    // --- CHECK 3: Nếu query lại DB mà vẫn rỗng (dù hiếm) ---
+    if (finalProducts.length === 0) {
+      const fallbackData = await getFallbackProducts(
+        targetProduct.category_id,
+        id
+      );
+      return res
+        .status(200)
+        .json({
+          success: true,
+          source: "fallback_db_empty",
+          data: fallbackData,
+        });
+    }
+
+    res.status(200).json({
+      success: true,
+      source: "ai",
+      data: finalProducts,
+    });
+  } catch (error) {
+    console.error("Lỗi Server/Gemini:", error.message);
+
+    // Fallback cuối cùng nếu crash toàn bộ
+    // Cần query lại targetProduct để lấy category_id nếu biến targetProduct chưa kịp khởi tạo
+    // Để an toàn, trả về mảng rỗng hoặc query random
+    try {
+      const fallback = await Product.find({
+        isActive: true,
+        _id: { $ne: id },
+      }).limit(18);
+      return res
+        .status(200)
+        .json({ success: true, source: "crash_fallback", data: fallback });
+    } catch (err) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+  }
+});
+
 export const productController = {
   getProductBySlug,
   getShopInfo,
+  getRelatedProductsAI,
 };

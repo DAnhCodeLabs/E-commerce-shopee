@@ -12,36 +12,14 @@ const ProductActions = ({
   quantity = 1,
   availableStock = 0,
   onAddToCart,
+  isLiked = false,
   onBuyNow,
   loading = false,
+  onToggleWishlist,
 }) => {
   const isOutOfStock = availableStock === 0;
   const isVariantNotSelected = currentModel === undefined;
 
-  const handleAddToCart = () => {
-    if (isOutOfStock) {
-      message.warning("Sản phẩm đã hết hàng");
-      return;
-    }
-
-    if (isVariantNotSelected) {
-      message.info("Vui lòng chọn phân loại hàng");
-      return;
-    }
-
-    const cartItem = {
-      productId,
-      model: currentModel,
-      quantity,
-      price: currentModel?.sale_price || currentModel?.price,
-    };
-
-    if (onAddToCart) {
-      onAddToCart(cartItem);
-    }
-
-    message.success("Đã thêm vào giỏ hàng");
-  };
 
   const handleBuyNow = () => {
     if (isOutOfStock) {
@@ -64,10 +42,6 @@ const ProductActions = ({
     if (onBuyNow) {
       onBuyNow(orderItem);
     }
-  };
-
-  const handleAddToWishlist = () => {
-    message.info("Đã thêm vào danh sách yêu thích");
   };
 
   return (
@@ -106,10 +80,14 @@ const ProductActions = ({
       <div className="flex gap-2">
         <Button
           icon={<HeartOutlined />}
-          onClick={handleAddToWishlist}
-          className="flex-1 border-gray-300 !text-gray-600 hover:!border-pink-500 hover:!text-pink-500"
+          onClick={onToggleWishlist}
+          className={`flex-1 border-gray-300 !text-gray-600 ${
+            isLiked
+              ? "!border-pink-500 !bg-pink-500  !text-white"
+              : "hover:!border-pink-500 hover:!text-pink-500"
+          }`}
         >
-          Yêu thích
+          {isLiked ? "Đã thích" : "Yêu thích"}
         </Button>
 
         <Button className="flex-1 !border-gray-300 !text-gray-600 hover:!border-blue-500 hover:!text-blue-500">

@@ -153,6 +153,12 @@ const accountSchema = new mongoose.Schema({
       return this.role === "seller";
     },
   },
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
 
   lastLogin: { type: Date, default: Date.now },
   devices: [

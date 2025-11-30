@@ -7,6 +7,7 @@ import { reviewController } from "../controllers/user/review.controller.js";
 import { uploadMultipleImages } from "../middleware/upload.js";
 import { cartController } from "../controllers/user/cart.controller.js";
 import { orderController } from "../controllers/user/order.controller.js";
+import { wishlistController } from "../controllers/user/wishlist.controller.js";
 
 const userRouter = express.Router();
 
@@ -59,4 +60,11 @@ userRouter.get("/order/:id", orderController.getOrderById);
 // 4. Xác nhận đã nhận hàng (User)
 userRouter.put("/order/:id/received", orderController.confirmReceived);
 userRouter.put("/order/:id/cancel", orderController.cancelOrder);
+
+// --- WISHLIST ROUTES ---
+// Lấy danh sách yêu thích
+userRouter.get("/wishlist", wishlistController.getWishlist);
+
+// Bật/Tắt yêu thích
+userRouter.post("/wishlist/toggle", wishlistController.toggleWishlist);
 export default userRouter;

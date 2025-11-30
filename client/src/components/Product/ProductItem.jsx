@@ -32,10 +32,7 @@ const ProductItem = ({
   const currentDiscount = calculateDiscount();
   const displayPrice = salePrice || originalPrice;
 
-  const productImage =
-    image?.[0] ||
-    image ||
-    "https://down-vn.img.susercontent.com/file/vn-11134207-820l4-mgktdzq4r8jv81.webp";
+  const productImage = image;
 
   return (
     <Link to={`/product/${slug}`} className="block h-full">
@@ -50,9 +47,7 @@ const ProductItem = ({
           {/* Image Container với tỷ lệ cố định */}
           <div className="relative pt-[100%] bg-gray-100 overflow-hidden">
             <img
-              src={
-                "https://down-vn.img.susercontent.com/file/vn-11134207-820l4-mdvkx197ak906b.webp"
-              }
+              src={productImage}
               alt={name}
               className="absolute inset-0 w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
             />

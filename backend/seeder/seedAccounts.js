@@ -1,152 +1,237 @@
+// seedAccounts.js – Chuẩn senior dev 2025
+import "dotenv/config";
 import mongoose from "mongoose";
-import readline from "readline";
+import { confirm, select, input } from "@inquirer/prompts";
+import chalk from "chalk";
+import ora from "ora";
+import { faker } from "@faker-js/faker";
 import Account from "../models/accountModel.js";
 
-const PASSWORD = "Password@123"; // GIỮ NGUYÊN NHƯ MÃ CŨ
+// ============ CONFIG BẮT BUỘC ============
+const MONGO_URI = process.env.MONGO_URI;
 
-// GIỮ NGUYÊN MONGO_URI NHƯ FILE CŨ
-const MONGO_URI =
-  "mongodb+srv://danhcodelabs_db_user:0000@cluster0.e8amyyc.mongodb.net/eCommerce";
+if (!MONGO_URI) {
+  console.error(chalk.red("❌ Thiếu MONGO_URI_SEED trong file .env"));
+  process.exit(1);
+}
 
-// ===== Helper random dữ liệu =====
-const randomFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+// Cấm chạy trên production
+if (process.env.NODE_ENV === "production") {
+  console.error(chalk.red("🚨 CẤM chạy seed script trên production!"));
+  process.exit(1);
+}
 
-const cities = ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Cần Thơ", "Hải Phòng"];
-
+// ============ DỮ LIỆU GIẢ CHẤT LƯỢNG CAO ============
+const cities = [
+  "Hà Nội",
+  "TP. Hồ Chí Minh",
+  "Đà Nẵng",
+  "Hải Phòng",
+  "Cần Thơ",
+  "Biên Hòa",
+  "Nha Trang",
+];
 const streets = [
-  "123 Nguyễn Trãi",
-  "45 Lê Lợi",
-  "789 Trần Phú",
-  "56 Hai Bà Trưng",
-  "101 Phan Xích Long",
+  "Nguyễn Trãi",
+  "Lê Lợi",
+  "Trần Phú",
+  "Hai Bà Trưng",
+  "Phan Xích Long",
+  "Nguyễn Huệ",
+  "Điện Biên Phủ",
+  "Lý Thường Kiệt",
+  "Hùng Vương",
+  "Bà Triệu",
+];
+const taxAuthorities = [
+  "Cục Thuế TP. Hồ Chí Minh",
+  "Cục Thuế Thành phố Hà Nội",
+  "Cục Thuế TP Đà Nẵng",
+  "Chi cục Thuế Quận 1",
+  "Chi cục Thuế Quận Bình Thạnh",
+  "Chi cục Thuế TP Thủ Đức",
 ];
 
-const taxAuthority = [
-  "Chi cục Thuế TP. Hồ Chí Minh",
-  "Chi cục Thuế Hà Nội",
-  "Chi cục Thuế Đà Nẵng",
-];
+const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// Địa chỉ giao hàng ngẫu nhiên
-function generateRandomAddress(fullName, phone) {
+function generateAddress(fullName, phone) {
   return {
     name: fullName,
     phone,
-    street: randomFrom(streets),
-    city: randomFrom(cities),
+    street: `${faker.number.int({ min: 1, max: 999 })} ${randomItem(streets)}`,
+    city: randomItem(cities),
+    state: "",
     country: "Việt Nam",
   };
 }
 
-// Thông tin shop cho seller
-function generateShopInfo(index) {
-  return {
-    shopName: `Shop người bán ${index}`,
-    shopDescription: "Cửa hàng test seed dữ liệu",
-    taxcode: `${Math.floor(1000000000 + Math.random() * 9000000000)}`, // 10 số
-    PlaceOfGrant: randomFrom(taxAuthority),
+function generateShop(index) {
+  const shopNames = [
+    `Shop ${faker.company.name()}`,
+    `${faker.person.lastName()} Store`,
+    `Cửa hàng ${faker.commerce.productName()}`,
+    `${faker.word.adjective()} Shop`,
+    `Siêu Thị ${faker.person.firstName()}`,
+    `${faker.color.human()} Fashion`,
+  ];
 
+  return {
+    shopName: `${randomItem(shopNames).replace(
+      /[^a-zA-Z0-9À-ỹ\s]/g,
+      ""
+    )} #${index}`,
+    shopDescription: faker.commerce.productDescription().slice(0, 499),
+    taxcode: faker.number.int({ min: 1000000000, max: 9999999999 }).toString(),
+    PlaceOfGrant: randomItem(taxAuthorities),
     addressShop: {
-      street: randomFrom(streets),
-      ward: "",
-      district: "",
-      city: randomFrom(cities),
+      street: `${faker.number.int(1, 999)} ${randomItem(streets)}`,
+      ward: `Phường ${faker.number.int(1, 30)}`,
+      district: `Quận ${faker.number.int(1, 12)}`,
+      city: randomItem(cities),
       country: "Việt Nam",
     },
     addressSeller: {
-      street: randomFrom(streets),
-      ward: "",
-      district: "",
-      city: randomFrom(cities),
+      street: `${faker.number.int(1, 999)} ${randomItem(streets)}`,
+      ward: `Phường ${faker.number.int(1, 30)}`,
+      district: `Quận ${faker.number.int(1, 12)}`,
+      city: randomItem(cities),
       country: "Việt Nam",
     },
-
-    joinDate: new Date(),
-    productsCount: Math.floor(Math.random() * 40),
-    followers: Math.floor(Math.random() * 800),
-    response_rate: Math.floor(80 + Math.random() * 20),
-    response_time: "trong vài giờ",
-
-    // shop chưa được xác thực
+    shopLogo: "",
+    joinDate: faker.date.past({ years: 3 }),
+    productsCount: faker.number.int({ min: 0, max: 250 }),
+    followers: faker.number.int({ min: 0, max: 5000 }),
+    response_rate: faker.number.int({ min: 70, max: 100 }),
+    response_time: faker.helpers.arrayElement([
+      "trong vài phút",
+      "trong vài giờ",
+      "trong ngày",
+    ]),
     verificationStatus: "pending",
     isActive: false,
   };
 }
 
-// Core seeder
-async function seed(role) {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("Kết nối MongoDB Atlas thành công");
+// ============ CORE SEEDER ============
+async function seedAccounts({ role, count, emailVerified = true }) {
+  const spinner = ora(`Đang tạo ${count} tài khoản ${role}...`).start();
 
-    await Account.deleteMany();
-    console.log("Đã xoá toàn bộ tài khoản cũ");
+  const operations = [];
 
-    const accountsToCreate = 5;
+  for (let i = 1; i <= count; i++) {
+    const fullName =
+      role === "admin"
+        ? i === 1
+          ? "Administrator"
+          : `Admin ${i}`
+        : role === "seller"
+        ? faker.person.fullName()
+        : faker.person.fullName();
 
-    for (let i = 1; i <= accountsToCreate; i++) {
-      const fullName = role === "seller" ? `Người Bán ${i}` : `Người Dùng ${i}`;
-      const username = `${role}${i}`;
-      const email = `${role}${i}@example.com`;
-      const phone = `09000000${i}`;
+    const username =
+      role === "admin" && i === 1
+        ? "admin"
+        : `${role}${faker.number.int(1000, 9999)}`;
 
-      const baseData = {
-        username,
-        email,
-        password: PASSWORD, // model tự hash qua pre("save")
-        emailVerified: true, // tài khoản luôn xác thực email
-        role,
-        fullName,
-        phoneNumber: phone,
-        avatar: "",
-        address: [generateRandomAddress(fullName, phone)], // mỗi tài khoản 1 địa chỉ giao hàng
-        devices: [],
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+    const accountData = {
+      username,
+      email:
+        role === "admin" && i === 1
+          ? "admin@ecommerce.com"
+          : faker.internet.email({
+              firstName: fullName.split(" ")[0],
+              provider: "example.com",
+            }),
+      password: "123456789", // sẽ tự hash
+      emailVerified,
+      role,
+      fullName,
+      phoneNumber: faker.phone.number({ format: "0#########" }),
+      avatar: "",
+      address: [
+        generateAddress(fullName, faker.phone.number({ format: "0#########" })),
+      ],
+      isActive: true,
+      createdAt: faker.date.past({ years: 2 }),
+      updatedAt: new Date(),
+    };
 
-      // Nếu là seller thì thêm shop
-      if (role === "seller") {
-        baseData.shop = generateShopInfo(i);
-      }
-
-      const account = new Account(baseData);
-      await account.save();
-
-      console.log(`--> Tạo tài khoản ${role} #${i} thành công`);
+    if (role === "seller") {
+      accountData.shop = generateShop(i);
     }
 
-    console.log(
-      `Seed thành công ${accountsToCreate} tài khoản ${role} (tự động hash mật khẩu)`
-    );
-
-    process.exit(0);
-  } catch (error) {
-    console.error("Lỗi seed:", error);
-    process.exit(1);
+    operations.push(new Account(accountData).save());
   }
+
+  await Promise.all(operations);
+  spinner.succeed(chalk.green(`Tạo thành công ${count} tài khoản ${role}`));
 }
 
-// CLI chọn loại tài khoản
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// ============ MAIN FLOW ============
+async function main() {
+  console.log(
+    chalk.cyan.bold("\n🚀 SEEDER TÀI KHOẢN - THƯƠNG MẠI ĐIỆN TỬ VIỆT NAM\n")
+  );
 
-console.log("\nBạn muốn tạo loại tài khoản nào?");
-console.log("1. User");
-console.log("2. Seller\n");
+  const role = await select({
+    message: "Bạn muốn seed loại tài khoản nào?",
+    choices: [
+      { name: "User thường", value: "user" },
+      { name: "Seller (người bán)", value: "seller" },
+      { name: "Admin", value: "admin" },
+    ],
+  });
 
-rl.question("Chọn 1 hoặc 2: ", async (answer) => {
-  rl.close();
+  const count = await input({
+    message: "Số lượng tài khoản muốn tạo?",
+    default: role === "admin" ? "1" : "20",
+    validate: (val) => (!isNaN(val) && val > 0) || "Phải là số dương!",
+  });
 
-  if (answer === "1") {
-    await seed("user");
-  } else if (answer === "2") {
-    await seed("seller");
-  } else {
-    console.log("Lựa chọn không hợp lệ. Thoát...");
+  const shouldDelete = await confirm({
+    message: chalk.red.bold(
+      `XÓA TOÀN BỘ tài khoản ${role} hiện tại trước khi seed?`
+    ),
+    default: false,
+  });
+
+  const finalConfirm = await confirm({
+    message: chalk.yellow.bold(
+      `Xác nhận cuối: Tạo ${count} tài khoản ${role} ${
+        shouldDelete ? "+ xóa cũ" : ""
+      }?`
+    ),
+    default: false,
+  });
+
+  if (!finalConfirm) {
+    console.log(chalk.blue("Đã hủy. Bye!\n"));
     process.exit(0);
   }
+
+  // Kết nối DB
+  const connectSpinner = ora("Kết nối MongoDB...").start();
+  await mongoose.connect(MONGO_URI);
+  connectSpinner.succeed("Kết nối MongoDB thành công");
+
+  // Xóa cũ nếu cần
+  if (shouldDelete) {
+    const deleteSpinner = ora(`Đang xóa tài khoản ${role} cũ...`).start();
+    await Account.deleteMany({ role });
+    deleteSpinner.succeed(`Đã xóa toàn bộ tài khoản ${role} cũ`);
+  }
+
+  // Tạo mới
+  await seedAccounts({ role, count: Number(count), emailVerified: true });
+
+  await mongoose.disconnect();
+  console.log(
+    chalk.magenta.bold("\n✅ SEED HOÀN TẤT! Database đã sẵn sàng để test.\n")
+  );
+  process.exit(0);
+}
+
+main().catch((err) => {
+  console.error(chalk.red.bold("\n💥 LỖI CHẾT NGƯỜI:"), err);
+  process.exit(1);
 });
